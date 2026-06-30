@@ -12,17 +12,38 @@ final class OBDService {
         self.transport = transport
     }
     
-    func read(_ pid: PID) async -> Double {
-        let raw = await transport.send(pid)
-        let payload = extractPayload(raw)
-        return pid.decode(payload)
+    func read<T>(_ pid: OBDParameter<T>) async -> T {
+        let response = await transport.send(pid)
+        return pid.decode(response)
     }
     
-    func extractPayload(_ bytes: [UInt8]) -> [UInt8] {
-        guard bytes.count > 2 else {
-            return []
-        }
+    func readSnapshot() async -> Snapshot {
+        async let rpm = read(PID.engineRpm)
+        async let speed = read(PID.vehicleSpeed)
+        async let coolantTemp = read(PID.coolantTemperature)
+        async let throttlePosition = read(PID.throttlePosition)
         
-        return Array(bytes.dropFirst(2))
+        return await Snapshot(
+            rpm: rpm,
+            speed: speed,
+            coolantTemp: coolantTemp,
+            throttlePosition: throttlePosition
+        )
+    }
+    
+    func snapshotStream() -> AsyncStream<Snapshot> {
+        AsyncStream { continuation in
+            let task = Task {
+                while !Task.isCancelled {
+                    let snapshot = await readSnapshot()
+                    continuation.yield(snapshot)
+                    try? await Task.sleep(nanoseconds: 250_000_000)
+                }
+            }
+            
+            continuation.onTermination = { _ in
+                task.cancel()
+            }
+        }
     }
 }

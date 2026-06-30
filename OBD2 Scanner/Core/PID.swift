@@ -5,14 +5,16 @@
 //  Created by Trevor Moore on 6/29/26.
 //
 
-struct PID {
+struct OBDParameter<T> {
     let command: String
-    let decode: ([UInt8]) -> Double
+    let unit: String
+    let decode: ([UInt8]) -> T
 }
 
-extension PID {
-    static let engineRpm = PID(
+enum PID {
+    static let engineRpm = OBDParameter<Double>(
         command: "010C",
+        unit: "RPM",
         decode: { bytes in
             guard bytes.count >= 2 else {
                 return 0
@@ -24,36 +26,27 @@ extension PID {
         }
     )
     
-    static let vehicleSpeed = PID(
+    static let vehicleSpeed = OBDParameter<Double>(
         command: "010D",
+        unit: "MPH",
         decode: { bytes in
-            guard bytes.count >= 1 else {
-                return 0
-            }
-            
-            return Double(bytes[0])
+            bytes.isEmpty ? 0 : Double(bytes[0])
         }
     )
     
-    static let coolantTemperature = PID(
+    static let coolantTemperature = OBDParameter<Double>(
         command: "0105",
+        unit: "C",
         decode: { bytes in
-            guard bytes.count >= 1 else {
-                return 0
-            }
-            
-            return Double(bytes[0]) - 40
+            bytes.isEmpty ? 0 : Double(bytes[0]) - 40
         }
     )
     
-    static let throttlePosition = PID(
+    static let throttlePosition = OBDParameter<Double>(
         command: "0111",
+        unit: "%",
         decode: { bytes in
-            guard bytes.count >= 1 else {
-                return 0
-            }
-            
-            return (Double(bytes[0]) * 100) / 255
+            bytes.isEmpty ? 0 : (Double(bytes[0]) * 100) / 255
         }
     )
 }

@@ -7,40 +7,40 @@
 	objects = {
 
 /* Begin PBXContainerItemProxy section */
-		262832B02FF337450065C1B5 /* PBXContainerItemProxy */ = {
+		2608509D2FF42B45008F5F16 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 2628329A2FF3373B0065C1B5 /* Project object */;
+			containerPortal = 260850872FF42B3E008F5F16 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 262832A12FF3373B0065C1B5;
+			remoteGlobalIDString = 2608508E2FF42B3E008F5F16;
 			remoteInfo = "OBD2 Scanner";
 		};
-		262832BA2FF337450065C1B5 /* PBXContainerItemProxy */ = {
+		260850A72FF42B45008F5F16 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 2628329A2FF3373B0065C1B5 /* Project object */;
+			containerPortal = 260850872FF42B3E008F5F16 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 262832A12FF3373B0065C1B5;
+			remoteGlobalIDString = 2608508E2FF42B3E008F5F16;
 			remoteInfo = "OBD2 Scanner";
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		262832A22FF3373B0065C1B5 /* OBD2 Scanner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "OBD2 Scanner.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		262832AF2FF337450065C1B5 /* OBD2 ScannerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "OBD2 ScannerTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		262832B92FF337450065C1B5 /* OBD2 ScannerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "OBD2 ScannerUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		2608508F2FF42B3E008F5F16 /* OBD2 Scanner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "OBD2 Scanner.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		2608509C2FF42B45008F5F16 /* OBD2 ScannerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "OBD2 ScannerTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		260850A62FF42B45008F5F16 /* OBD2 ScannerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "OBD2 ScannerUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		262832A42FF3373B0065C1B5 /* OBD2 Scanner */ = {
+		260850912FF42B3E008F5F16 /* OBD2 Scanner */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = "OBD2 Scanner";
 			sourceTree = "<group>";
 		};
-		262832B22FF337450065C1B5 /* OBD2 ScannerTests */ = {
+		2608509F2FF42B45008F5F16 /* OBD2 ScannerTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = "OBD2 ScannerTests";
 			sourceTree = "<group>";
 		};
-		262832BC2FF337450065C1B5 /* OBD2 ScannerUITests */ = {
+		260850A92FF42B45008F5F16 /* OBD2 ScannerUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = "OBD2 ScannerUITests";
 			sourceTree = "<group>";
@@ -48,21 +48,21 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		2628329F2FF3373B0065C1B5 /* Frameworks */ = {
+		2608508C2FF42B3E008F5F16 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		262832AC2FF337450065C1B5 /* Frameworks */ = {
+		260850992FF42B45008F5F16 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		262832B62FF337450065C1B5 /* Frameworks */ = {
+		260850A32FF42B45008F5F16 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -72,22 +72,22 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		262832992FF3373B0065C1B5 = {
+		260850862FF42B3E008F5F16 = {
 			isa = PBXGroup;
 			children = (
-				262832A42FF3373B0065C1B5 /* OBD2 Scanner */,
-				262832B22FF337450065C1B5 /* OBD2 ScannerTests */,
-				262832BC2FF337450065C1B5 /* OBD2 ScannerUITests */,
-				262832A32FF3373B0065C1B5 /* Products */,
+				260850912FF42B3E008F5F16 /* OBD2 Scanner */,
+				2608509F2FF42B45008F5F16 /* OBD2 ScannerTests */,
+				260850A92FF42B45008F5F16 /* OBD2 ScannerUITests */,
+				260850902FF42B3E008F5F16 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		262832A32FF3373B0065C1B5 /* Products */ = {
+		260850902FF42B3E008F5F16 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				262832A22FF3373B0065C1B5 /* OBD2 Scanner.app */,
-				262832AF2FF337450065C1B5 /* OBD2 ScannerTests.xctest */,
-				262832B92FF337450065C1B5 /* OBD2 ScannerUITests.xctest */,
+				2608508F2FF42B3E008F5F16 /* OBD2 Scanner.app */,
+				2608509C2FF42B45008F5F16 /* OBD2 ScannerTests.xctest */,
+				260850A62FF42B45008F5F16 /* OBD2 ScannerUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -95,134 +95,134 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		262832A12FF3373B0065C1B5 /* OBD2 Scanner */ = {
+		2608508E2FF42B3E008F5F16 /* OBD2 Scanner */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 262832C32FF337450065C1B5 /* Build configuration list for PBXNativeTarget "OBD2 Scanner" */;
+			buildConfigurationList = 260850B02FF42B45008F5F16 /* Build configuration list for PBXNativeTarget "OBD2 Scanner" */;
 			buildPhases = (
-				2628329E2FF3373B0065C1B5 /* Sources */,
-				2628329F2FF3373B0065C1B5 /* Frameworks */,
-				262832A02FF3373B0065C1B5 /* Resources */,
+				2608508B2FF42B3E008F5F16 /* Sources */,
+				2608508C2FF42B3E008F5F16 /* Frameworks */,
+				2608508D2FF42B3E008F5F16 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				262832A42FF3373B0065C1B5 /* OBD2 Scanner */,
+				260850912FF42B3E008F5F16 /* OBD2 Scanner */,
 			);
 			name = "OBD2 Scanner";
 			packageProductDependencies = (
 			);
 			productName = "OBD2 Scanner";
-			productReference = 262832A22FF3373B0065C1B5 /* OBD2 Scanner.app */;
+			productReference = 2608508F2FF42B3E008F5F16 /* OBD2 Scanner.app */;
 			productType = "com.apple.product-type.application";
 		};
-		262832AE2FF337450065C1B5 /* OBD2 ScannerTests */ = {
+		2608509B2FF42B45008F5F16 /* OBD2 ScannerTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 262832C62FF337450065C1B5 /* Build configuration list for PBXNativeTarget "OBD2 ScannerTests" */;
+			buildConfigurationList = 260850B32FF42B45008F5F16 /* Build configuration list for PBXNativeTarget "OBD2 ScannerTests" */;
 			buildPhases = (
-				262832AB2FF337450065C1B5 /* Sources */,
-				262832AC2FF337450065C1B5 /* Frameworks */,
-				262832AD2FF337450065C1B5 /* Resources */,
+				260850982FF42B45008F5F16 /* Sources */,
+				260850992FF42B45008F5F16 /* Frameworks */,
+				2608509A2FF42B45008F5F16 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				262832B12FF337450065C1B5 /* PBXTargetDependency */,
+				2608509E2FF42B45008F5F16 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				262832B22FF337450065C1B5 /* OBD2 ScannerTests */,
+				2608509F2FF42B45008F5F16 /* OBD2 ScannerTests */,
 			);
 			name = "OBD2 ScannerTests";
 			packageProductDependencies = (
 			);
 			productName = "OBD2 ScannerTests";
-			productReference = 262832AF2FF337450065C1B5 /* OBD2 ScannerTests.xctest */;
+			productReference = 2608509C2FF42B45008F5F16 /* OBD2 ScannerTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		262832B82FF337450065C1B5 /* OBD2 ScannerUITests */ = {
+		260850A52FF42B45008F5F16 /* OBD2 ScannerUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 262832C92FF337450065C1B5 /* Build configuration list for PBXNativeTarget "OBD2 ScannerUITests" */;
+			buildConfigurationList = 260850B62FF42B45008F5F16 /* Build configuration list for PBXNativeTarget "OBD2 ScannerUITests" */;
 			buildPhases = (
-				262832B52FF337450065C1B5 /* Sources */,
-				262832B62FF337450065C1B5 /* Frameworks */,
-				262832B72FF337450065C1B5 /* Resources */,
+				260850A22FF42B45008F5F16 /* Sources */,
+				260850A32FF42B45008F5F16 /* Frameworks */,
+				260850A42FF42B45008F5F16 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				262832BB2FF337450065C1B5 /* PBXTargetDependency */,
+				260850A82FF42B45008F5F16 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				262832BC2FF337450065C1B5 /* OBD2 ScannerUITests */,
+				260850A92FF42B45008F5F16 /* OBD2 ScannerUITests */,
 			);
 			name = "OBD2 ScannerUITests";
 			packageProductDependencies = (
 			);
 			productName = "OBD2 ScannerUITests";
-			productReference = 262832B92FF337450065C1B5 /* OBD2 ScannerUITests.xctest */;
+			productReference = 260850A62FF42B45008F5F16 /* OBD2 ScannerUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		2628329A2FF3373B0065C1B5 /* Project object */ = {
+		260850872FF42B3E008F5F16 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 2630;
 				LastUpgradeCheck = 2630;
 				TargetAttributes = {
-					262832A12FF3373B0065C1B5 = {
+					2608508E2FF42B3E008F5F16 = {
 						CreatedOnToolsVersion = 26.3;
 					};
-					262832AE2FF337450065C1B5 = {
+					2608509B2FF42B45008F5F16 = {
 						CreatedOnToolsVersion = 26.3;
-						TestTargetID = 262832A12FF3373B0065C1B5;
+						TestTargetID = 2608508E2FF42B3E008F5F16;
 					};
-					262832B82FF337450065C1B5 = {
+					260850A52FF42B45008F5F16 = {
 						CreatedOnToolsVersion = 26.3;
-						TestTargetID = 262832A12FF3373B0065C1B5;
+						TestTargetID = 2608508E2FF42B3E008F5F16;
 					};
 				};
 			};
-			buildConfigurationList = 2628329D2FF3373B0065C1B5 /* Build configuration list for PBXProject "OBD2 Scanner" */;
+			buildConfigurationList = 2608508A2FF42B3E008F5F16 /* Build configuration list for PBXProject "OBD2 Scanner" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
 			);
-			mainGroup = 262832992FF3373B0065C1B5;
+			mainGroup = 260850862FF42B3E008F5F16;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
-			productRefGroup = 262832A32FF3373B0065C1B5 /* Products */;
+			productRefGroup = 260850902FF42B3E008F5F16 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				262832A12FF3373B0065C1B5 /* OBD2 Scanner */,
-				262832AE2FF337450065C1B5 /* OBD2 ScannerTests */,
-				262832B82FF337450065C1B5 /* OBD2 ScannerUITests */,
+				2608508E2FF42B3E008F5F16 /* OBD2 Scanner */,
+				2608509B2FF42B45008F5F16 /* OBD2 ScannerTests */,
+				260850A52FF42B45008F5F16 /* OBD2 ScannerUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		262832A02FF3373B0065C1B5 /* Resources */ = {
+		2608508D2FF42B3E008F5F16 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		262832AD2FF337450065C1B5 /* Resources */ = {
+		2608509A2FF42B45008F5F16 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		262832B72FF337450065C1B5 /* Resources */ = {
+		260850A42FF42B45008F5F16 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -232,21 +232,21 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		2628329E2FF3373B0065C1B5 /* Sources */ = {
+		2608508B2FF42B3E008F5F16 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		262832AB2FF337450065C1B5 /* Sources */ = {
+		260850982FF42B45008F5F16 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		262832B52FF337450065C1B5 /* Sources */ = {
+		260850A22FF42B45008F5F16 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -256,20 +256,20 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		262832B12FF337450065C1B5 /* PBXTargetDependency */ = {
+		2608509E2FF42B45008F5F16 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 262832A12FF3373B0065C1B5 /* OBD2 Scanner */;
-			targetProxy = 262832B02FF337450065C1B5 /* PBXContainerItemProxy */;
+			target = 2608508E2FF42B3E008F5F16 /* OBD2 Scanner */;
+			targetProxy = 2608509D2FF42B45008F5F16 /* PBXContainerItemProxy */;
 		};
-		262832BB2FF337450065C1B5 /* PBXTargetDependency */ = {
+		260850A82FF42B45008F5F16 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 262832A12FF3373B0065C1B5 /* OBD2 Scanner */;
-			targetProxy = 262832BA2FF337450065C1B5 /* PBXContainerItemProxy */;
+			target = 2608508E2FF42B3E008F5F16 /* OBD2 Scanner */;
+			targetProxy = 260850A72FF42B45008F5F16 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		262832C12FF337450065C1B5 /* Debug */ = {
+		260850AE2FF42B45008F5F16 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -304,6 +304,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = Z73289BXV6;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -332,7 +333,7 @@
 			};
 			name = Debug;
 		};
-		262832C22FF337450065C1B5 /* Release */ = {
+		260850AF2FF42B45008F5F16 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -367,6 +368,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = Z73289BXV6;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -388,7 +390,7 @@
 			};
 			name = Release;
 		};
-		262832C42FF337450065C1B5 /* Debug */ = {
+		260850B12FF42B45008F5F16 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -420,7 +422,7 @@
 			};
 			name = Debug;
 		};
-		262832C52FF337450065C1B5 /* Release */ = {
+		260850B22FF42B45008F5F16 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -452,12 +454,13 @@
 			};
 			name = Release;
 		};
-		262832C72FF337450065C1B5 /* Debug */ = {
+		260850B42FF42B45008F5F16 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = Z73289BXV6;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
 				MARKETING_VERSION = 1.0;
@@ -473,12 +476,13 @@
 			};
 			name = Debug;
 		};
-		262832C82FF337450065C1B5 /* Release */ = {
+		260850B52FF42B45008F5F16 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = Z73289BXV6;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
 				MARKETING_VERSION = 1.0;
@@ -494,11 +498,12 @@
 			};
 			name = Release;
 		};
-		262832CA2FF337450065C1B5 /* Debug */ = {
+		260850B72FF42B45008F5F16 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = Z73289BXV6;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "ASI.OBD2-ScannerUITests";
@@ -513,11 +518,12 @@
 			};
 			name = Debug;
 		};
-		262832CB2FF337450065C1B5 /* Release */ = {
+		260850B82FF42B45008F5F16 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = Z73289BXV6;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "ASI.OBD2-ScannerUITests";
@@ -535,43 +541,43 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		2628329D2FF3373B0065C1B5 /* Build configuration list for PBXProject "OBD2 Scanner" */ = {
+		2608508A2FF42B3E008F5F16 /* Build configuration list for PBXProject "OBD2 Scanner" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				262832C12FF337450065C1B5 /* Debug */,
-				262832C22FF337450065C1B5 /* Release */,
+				260850AE2FF42B45008F5F16 /* Debug */,
+				260850AF2FF42B45008F5F16 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		262832C32FF337450065C1B5 /* Build configuration list for PBXNativeTarget "OBD2 Scanner" */ = {
+		260850B02FF42B45008F5F16 /* Build configuration list for PBXNativeTarget "OBD2 Scanner" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				262832C42FF337450065C1B5 /* Debug */,
-				262832C52FF337450065C1B5 /* Release */,
+				260850B12FF42B45008F5F16 /* Debug */,
+				260850B22FF42B45008F5F16 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		262832C62FF337450065C1B5 /* Build configuration list for PBXNativeTarget "OBD2 ScannerTests" */ = {
+		260850B32FF42B45008F5F16 /* Build configuration list for PBXNativeTarget "OBD2 ScannerTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				262832C72FF337450065C1B5 /* Debug */,
-				262832C82FF337450065C1B5 /* Release */,
+				260850B42FF42B45008F5F16 /* Debug */,
+				260850B52FF42B45008F5F16 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		262832C92FF337450065C1B5 /* Build configuration list for PBXNativeTarget "OBD2 ScannerUITests" */ = {
+		260850B62FF42B45008F5F16 /* Build configuration list for PBXNativeTarget "OBD2 ScannerUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				262832CA2FF337450065C1B5 /* Debug */,
-				262832CB2FF337450065C1B5 /* Release */,
+				260850B72FF42B45008F5F16 /* Debug */,
+				260850B82FF42B45008F5F16 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = 2628329A2FF3373B0065C1B5 /* Project object */;
+	rootObject = 260850872FF42B3E008F5F16 /* Project object */;
 }
