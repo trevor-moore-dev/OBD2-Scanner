@@ -12,6 +12,14 @@ final class OBDService {
         self.transport = transport
     }
     
+    func connect() async throws {
+        try await transport.connect()
+    }
+    
+    func disconnect() {
+        transport.disconnect()
+    }
+    
     func read<T>(_ pid: OBDParameter<T>) async -> T {
         let response = await transport.send(pid)
         return pid.decode(response)

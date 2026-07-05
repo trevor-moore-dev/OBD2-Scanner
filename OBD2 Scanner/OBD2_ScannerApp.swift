@@ -15,7 +15,7 @@ struct OBD2_ScannerApp: App {
     private let dashboardViewModel: DashboardViewModel
     
     init() {
-        transport = MockTransport()
+        transport = BluetoothTransport()
         obdService = OBDService(
             transport: transport
         )

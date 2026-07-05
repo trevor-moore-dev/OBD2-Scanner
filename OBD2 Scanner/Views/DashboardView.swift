@@ -10,6 +10,8 @@ import SwiftUI
 struct DashboardView: View {
     
     @StateObject private var viewModel: DashboardViewModel
+    @State private var connection: ConnectionState = .idle
+    @State private var isScanning: Bool = false
     
     init(viewModel: DashboardViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -35,9 +37,36 @@ struct DashboardView: View {
             Spacer()
             
             Button(action: {
-                viewModel.isScanning ? viewModel.stop() : viewModel.start()
+                Task {
+                    if connection == .ready {
+                        viewModel.disconnect()
+                        connection = .idle
+                    } else {
+                        connection = .connecting
+                        do {
+                            try await viewModel.connect()
+                            connection = .ready
+                        } catch {
+                            connection = .idle
+                        }
+                    }
+                }
             }) {
-                Text(viewModel.isScanning ? "Stop Scan" : "Start Scan")
+                Text(connection == .ready ? "Disconnect" : "Connect")
+                    .padding(.vertical, 8)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.white)
+                    .foregroundColor(.blue)
+                    .cornerRadius(18)
+            }
+            .padding(.horizontal, 20)
+            .disabled(connection == .connecting)
+            
+            Button(action: {
+                isScanning ? viewModel.stop() : viewModel.start()
+                isScanning = !isScanning
+            }) {
+                Text(isScanning ? "Stop Scan" : "Start Scan")
                     .padding(.vertical, 8)
                     .frame(maxWidth: .infinity)
                     .background(Color.blue)
@@ -46,13 +75,14 @@ struct DashboardView: View {
             }
             .padding(.horizontal, 20)
             .padding(.bottom, 8)
+            .disabled(connection != .ready)
         }
         .padding()
     }
 }
 
 #Preview {
-    let transport = MockTransport()
+    let transport = BluetoothTransport()
     let service = OBDService(
         transport: transport
     )
