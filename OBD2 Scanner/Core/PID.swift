@@ -5,10 +5,14 @@
 //  Created by Trevor Moore on 6/29/26.
 //
 
+enum PIDError: Error {
+    case insufficientBytes(pid: String, expected: Int, actual: Int)
+}
+
 struct OBDParameter<T> {
     let command: String
     let unit: String
-    let decode: ([UInt8]) -> T
+    let decode: ([UInt8]) throws -> T
 }
 
 enum PID {
@@ -17,12 +21,19 @@ enum PID {
         unit: "RPM",
         decode: { bytes in
             guard bytes.count >= 2 else {
-                return 0
+                throw PIDError.insufficientBytes(
+                    pid: "010C",
+                    expected: 2,
+                    actual: bytes.count
+                )
             }
             
-            let a = Int(bytes[0])
-            let b = Int(bytes[1])
-            return Double((a << 8) | b) / 4.0
+            let A = Int(bytes[0])
+            let B = Int(bytes[1])
+            
+            let value = (A << 8) | B
+            
+            return Double(value) / 4.0
         }
     )
     
@@ -30,7 +41,17 @@ enum PID {
         command: "010D",
         unit: "MPH",
         decode: { bytes in
-            bytes.isEmpty ? 0 : Double(bytes[0])
+            guard !bytes.isEmpty else {
+                throw PIDError.insufficientBytes(
+                    pid: "010D",
+                    expected: 1,
+                    actual: bytes.count
+                )
+            }
+            
+            let A = Double(bytes[0])
+            
+            return A * 0.621371
         }
     )
     
@@ -38,7 +59,17 @@ enum PID {
         command: "0105",
         unit: "C",
         decode: { bytes in
-            bytes.isEmpty ? 0 : Double(bytes[0]) - 40
+            guard !bytes.isEmpty else {
+                throw PIDError.insufficientBytes(
+                    pid: "0105",
+                    expected: 1,
+                    actual: bytes.count
+                )
+            }
+            
+            let A = Double(bytes[0])
+            
+            return A - 40
         }
     )
     
@@ -46,7 +77,17 @@ enum PID {
         command: "0111",
         unit: "%",
         decode: { bytes in
-            bytes.isEmpty ? 0 : (Double(bytes[0]) * 100) / 255
+            guard !bytes.isEmpty else {
+                throw PIDError.insufficientBytes(
+                    pid: "0111",
+                    expected: 1,
+                    actual: bytes.count
+                )
+            }
+            
+            let A = Double(bytes[0])
+            
+            return (A * 100) / 255
         }
     )
 }
