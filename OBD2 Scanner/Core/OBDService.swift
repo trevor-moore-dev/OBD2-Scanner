@@ -20,16 +20,22 @@ final class OBDService {
         transport.disconnect()
     }
     
-    func read<T>(_ pid: OBDParameter<T>) async -> T {
-        let response = await transport.send(pid)
-        return pid.decode(response)
+    func read<T>(_ pid: OBDParameter<T>, fallback: T) async -> T {
+        do {
+            let response = try await transport.send(pid)
+            return try pid.decode(response)
+        } catch {
+            print(error)
+        }
+        
+        return fallback
     }
     
     func readSnapshot() async -> Snapshot {
-        async let rpm = read(PID.engineRpm)
-        async let speed = read(PID.vehicleSpeed)
-        async let coolantTemp = read(PID.coolantTemperature)
-        async let throttlePosition = read(PID.throttlePosition)
+        async let rpm = read(PID.engineRpm, fallback: 0)
+        async let speed = read(PID.vehicleSpeed, fallback: 0)
+        async let coolantTemp = read(PID.coolantTemperature, fallback: 0)
+        async let throttlePosition = read(PID.throttlePosition, fallback: 0)
         
         return await Snapshot(
             rpm: rpm,

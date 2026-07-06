@@ -8,5 +8,5 @@
 protocol OBDTransport {
     func connect() async throws
     func disconnect()
-    func send<T>(_ command: OBDParameter<T>) async -> [UInt8]
+    func send<T>(_ command: OBDParameter<T>) async throws -> [UInt8]
 }

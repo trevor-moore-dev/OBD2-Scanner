@@ -5,12 +5,15 @@
 //  Created by Trevor Moore on 7/4/26.
 //
 
+import Synchronization
 import CoreBluetooth
 
 enum BluetoothError: Error {
     case connectionFailed
     case connectionTimeout
     case bluetoothUnavailable
+    case sessionTimeout
+    case sessionError(String)
 }
 
 enum ConnectionState {
@@ -35,6 +38,9 @@ final class BluetoothTransport:
     
     private var connectContinuation: CheckedContinuation<Void, Error>?
     private var connectTask: Task<Void, Error>?
+    
+    private var session: BluetoothSession?
+    private let sessionLock = Mutex<Void>(())
     
     private(set) var state: ConnectionState = .idle
     
@@ -75,12 +81,7 @@ final class BluetoothTransport:
         }
         
         let timeout = Task {
-            do {
-                try await Task.sleep(nanoseconds: 60 * 1_000_000_000) // 60 seconds
-            } catch {
-                return
-            }
-            
+            try? await Task.sleep(nanoseconds: 60 * 1_000_000_000) // 60 seconds
             guard connectContinuation != nil else { return }
             centralManager.stopScan()
             if peripheral != nil {
@@ -203,12 +204,7 @@ final class BluetoothTransport:
             return
         }
         
-        print("Service: \(service.uuid)")
-        
         for characteristic in characteristics {
-            print("Characteristic: \(characteristic.uuid)")
-            printProperties(characteristic.properties)
-            
             if characteristic.properties.contains(.write) ||
                 characteristic.properties.contains(.writeWithoutResponse) {
                 writeCharacteristic = characteristic
@@ -243,61 +239,64 @@ final class BluetoothTransport:
         didUpdateValueFor characteristic: CBCharacteristic,
         error: Error?
     ) {
+        var currentSession: BluetoothSession?
+        
+        sessionLock.withLock { _ in
+            currentSession = session
+        }
+        
+        guard currentSession != nil else {
+            print("Session object not initialized.")
+            return
+        }
+            
         guard error == nil else {
-            print(error!.localizedDescription)
+            currentSession!.failure(BluetoothError.sessionError(error!.localizedDescription))
             return
         }
         
-        // TODO
+        if let data = characteristic.value {
+            currentSession!.append(data)
+        }
     }
     
-    func send<T>(_ command: OBDParameter<T>) async -> [UInt8] {
-        // TODO
-        return []
-    }
-    
-    private func extractPayload(_ value: String) -> [UInt8] {
-        let bytes = value
-            .split(separator: " ")
-            .compactMap { UInt8($0, radix: 16) }
-        
-        guard bytes.count > 2 else {
-            return []
+    func send<T>(_ parameter: OBDParameter<T>) async throws -> [UInt8] {
+        guard
+            let characteristic = writeCharacteristic,
+            let writeData = parameter.command.data(using: .ascii),
+            let device = peripheral
+        else {
+            throw BluetoothError.bluetoothUnavailable
         }
         
-        return Array(bytes.dropFirst(2))
-    }
-    
-    private func printProperties(_ properties: CBCharacteristicProperties) {
-        if properties.contains(.broadcast) {
-            print("  • broadcast")
+        var currentSession: BluetoothSession?
+        
+        defer {
+            sessionLock.withLock { _ in
+                if currentSession == session {
+                    session = nil
+                }
+            }
         }
-        if properties.contains(.read) {
-            print("  • read")
-        }
-        if properties.contains(.writeWithoutResponse) {
-            print("  • writeWithoutResponse")
-        }
-        if properties.contains(.write) {
-            print("  • write")
-        }
-        if properties.contains(.notify) {
-            print("  • notify")
-        }
-        if properties.contains(.indicate) {
-            print("  • indicate")
-        }
-        if properties.contains(.authenticatedSignedWrites) {
-            print("  • authenticatedSignedWrites")
-        }
-        if properties.contains(.extendedProperties) {
-            print("  • extendedProperties")
-        }
-        if properties.contains(.notifyEncryptionRequired) {
-            print("  • notifyEncryptionRequired")
-        }
-        if properties.contains(.indicateEncryptionRequired) {
-            print("  • indicateEncryptionRequired")
+        
+        return try await withCheckedThrowingContinuation { continuation in
+            var error: Error?
+            
+            sessionLock.withLock { _ in
+                if session != nil {
+                    error = BluetoothError.sessionError("Bluetooth transport busy.")
+                } else {
+                    currentSession = BluetoothSession(continuation)
+                    session = currentSession
+                }
+            }
+            
+            guard error == nil else {
+                continuation.resume(throwing: error!)
+                return
+            }
+            
+            device.writeValue(writeData, for: characteristic, type: .withoutResponse)
         }
     }
     
