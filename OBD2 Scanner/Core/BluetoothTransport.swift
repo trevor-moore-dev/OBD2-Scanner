@@ -260,10 +260,19 @@ final class BluetoothTransport:
         }
     }
     
-    func send<T>(_ parameter: OBDParameter<T>) async throws -> [UInt8] {
+    func query<T>(_ parameter: OBDParameter<T>) async throws -> T {
+        let bytes = try await sendRaw(parameter.command)
+        return try parameter.decode(bytes)
+    }
+    
+    func sendRaw(_ command: String) async throws -> [UInt8] {
+        let terminatedCommand = command.hasSuffix("\r")
+            ? command
+            : command + "\r"
+        
         guard
             let characteristic = writeCharacteristic,
-            let writeData = parameter.command.data(using: .ascii),
+            let writeData = terminatedCommand.data(using: .ascii),
             let device = peripheral
         else {
             throw BluetoothError.bluetoothUnavailable
