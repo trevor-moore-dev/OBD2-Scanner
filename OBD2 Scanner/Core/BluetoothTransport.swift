@@ -262,7 +262,8 @@ final class BluetoothTransport:
     
     func query<T>(_ parameter: OBDParameter<T>) async throws -> T {
         let bytes = try await sendRaw(parameter.command)
-        return try parameter.decode(bytes)
+        let parsed = try parseResponse(bytes)
+        return try parameter.decode(parsed)
     }
     
     func sendRaw(_ command: String) async throws -> [UInt8] {
@@ -307,6 +308,22 @@ final class BluetoothTransport:
             
             device.writeValue(writeData, for: characteristic, type: .withoutResponse)
         }
+    }
+    
+    private func parseResponse(_ bytes: [UInt8]) throws -> [UInt8] {
+        guard let string = String(bytes: bytes, encoding: .ascii) else {
+            throw PIDError.decodingError("Invalid ASCII response.")
+        }
+        
+        let cleaned = string
+            .replacingOccurrences(of: "\r", with: "")
+            .replacingOccurrences(of: "\n", with: "")
+            .replacingOccurrences(of: ">", with: "")
+            .trimmingCharacters(in: .whitespaces)
+        
+        return cleaned
+            .split(separator: " ")
+            .compactMap { UInt8($0, radix: 16) }
     }
     
     private func setState(_ newState: ConnectionState) {

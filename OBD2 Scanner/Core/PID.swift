@@ -7,6 +7,7 @@
 
 enum PIDError: Error {
     case insufficientBytes(pid: String, expected: Int, actual: Int)
+    case decodingError(String)
 }
 
 struct OBDParameter<T> {
@@ -20,7 +21,7 @@ enum PID {
         command: "010C",
         unit: "RPM",
         decode: { bytes in
-            guard bytes.count >= 2 else {
+            guard bytes.count >= 4 else {
                 throw PIDError.insufficientBytes(
                     pid: "010C",
                     expected: 2,
@@ -28,8 +29,8 @@ enum PID {
                 )
             }
             
-            let A = Int(bytes[0])
-            let B = Int(bytes[1])
+            let A = Int(bytes[2])
+            let B = Int(bytes[3])
             
             let value = (A << 8) | B
             
@@ -41,7 +42,7 @@ enum PID {
         command: "010D",
         unit: "MPH",
         decode: { bytes in
-            guard !bytes.isEmpty else {
+            guard bytes.count >= 3 else {
                 throw PIDError.insufficientBytes(
                     pid: "010D",
                     expected: 1,
@@ -49,7 +50,7 @@ enum PID {
                 )
             }
             
-            let A = Double(bytes[0])
+            let A = Double(bytes[2])
             
             return A * 0.621371
         }
@@ -59,7 +60,7 @@ enum PID {
         command: "0105",
         unit: "C",
         decode: { bytes in
-            guard !bytes.isEmpty else {
+            guard bytes.count >= 3 else {
                 throw PIDError.insufficientBytes(
                     pid: "0105",
                     expected: 1,
@@ -67,7 +68,7 @@ enum PID {
                 )
             }
             
-            let A = Double(bytes[0])
+            let A = Double(bytes[2])
             
             return A - 40
         }
@@ -77,7 +78,7 @@ enum PID {
         command: "0111",
         unit: "%",
         decode: { bytes in
-            guard !bytes.isEmpty else {
+            guard bytes.count >= 3 else {
                 throw PIDError.insufficientBytes(
                     pid: "0111",
                     expected: 1,
@@ -85,7 +86,7 @@ enum PID {
                 )
             }
             
-            let A = Double(bytes[0])
+            let A = Double(bytes[2])
             
             return (A * 100) / 255
         }
