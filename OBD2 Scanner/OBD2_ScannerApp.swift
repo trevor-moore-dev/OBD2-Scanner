@@ -28,6 +28,9 @@ struct OBD2_ScannerApp: App {
     var body: some Scene {
         WindowGroup {
             DashboardView(viewModel: dashboardViewModel)
+                .task {
+                    await obdService.connect()
+                }
         }
     }
 }
