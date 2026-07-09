@@ -315,17 +315,15 @@ final class BluetoothTransport:
             throw PIDError.decodingError("Invalid ASCII response.")
         }
         
-        let cleaned = string
+        let hex = string
             .replacingOccurrences(of: "\r", with: "")
             .replacingOccurrences(of: "\n", with: "")
             .replacingOccurrences(of: ">", with: "")
             .trimmingCharacters(in: .whitespaces)
         
-        guard let response = cleaned.split(separator: "\n").first else {
+        guard !hex.isEmpty else {
             throw PIDError.decodingError("Empty response.")
         }
-        
-        let hex = String(response)
         
         guard hex.count % 2 == 0 else {
             throw PIDError.decodingError("Invalid hex response: \(hex)")
