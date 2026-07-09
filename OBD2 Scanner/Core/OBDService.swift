@@ -5,53 +5,134 @@
 //  Created by Trevor Moore on 6/29/26.
 //
 
-final class OBDService {
+import Foundation
+internal import Combine
+
+enum OBDConnection {
+    case unknown
+    case connecting
+    case ready
+    case failed
+}
+
+@MainActor
+final class OBDService: ObservableObject {
+    
+    @Published private(set) var connection: OBDConnection = .unknown
+    @Published private(set) var isStreaming: Bool = false
+    @Published private(set) var snapshot: Snapshot?
+    
+    private var streamTask: Task<Void, Never>?
     private let transport: OBDTransport
     
     init(transport: OBDTransport) {
         self.transport = transport
     }
     
-    func connect() async throws {
-        try await transport.connect()
+    func connect() async {
+        guard connection == .unknown || connection == .failed else {
+            return
+        }
+        
+        connection = .connecting
+        
+        do {
+            try await connectWithRetry(maxAttempts: 3)
+            try await initialize()
+            
+            connection = .ready
+        } catch {
+            print(error)
+            transport.disconnect()
+            connection = .failed
+        }
     }
     
     func disconnect() {
+        defer {
+            snapshot = nil
+            connection = .unknown
+        }
+        
+        stopStream()
         transport.disconnect()
     }
     
-    func read<T>(_ pid: OBDParameter<T>, fallback: T) async -> T {
-        do {
-            let response = try await transport.send(pid)
-            return try pid.decode(response)
-        } catch {
-            print(error)
+    func startStream() {
+        guard
+            !isStreaming &&
+            connection == .ready &&
+            streamTask == nil
+        else {
+            return
         }
         
-        return fallback
+        isStreaming = true
+        streamTask = Task {
+            defer {
+                streamTask = nil
+                isStreaming = false
+            }
+            
+            for await snapshot in self.snapshotStream() {
+                self.snapshot = snapshot
+            }
+        }
     }
     
-    func readSnapshot() async -> Snapshot {
-        async let rpm = read(PID.engineRpm, fallback: 0)
-        async let speed = read(PID.vehicleSpeed, fallback: 0)
-        async let coolantTemp = read(PID.coolantTemperature, fallback: 0)
-        async let throttlePosition = read(PID.throttlePosition, fallback: 0)
+    func stopStream() {
+        streamTask?.cancel()
+        streamTask = nil
+        isStreaming = false
+    }
+    
+    private func connectWithRetry(maxAttempts: Int) async throws {
+        var remaining = maxAttempts
         
-        return await Snapshot(
-            rpm: rpm,
-            speed: speed,
-            coolantTemp: coolantTemp,
-            throttlePosition: throttlePosition
-        )
+        while remaining > 0 {
+            do {
+                try await transport.connect()
+                return
+            } catch {
+                remaining -= 1
+                
+                if remaining == 0 {
+                    throw error
+                }
+                
+                try await Task.sleep(for: .seconds(1))
+            }
+        }
     }
     
-    func snapshotStream() -> AsyncStream<Snapshot> {
+    private func initialize() async throws {
+        _ = try await transport.sendRaw("ATZ")
+        try await Task.sleep(for: .seconds(2))
+        
+        _ = try await transport.sendRaw("ATE0")
+        try await Task.sleep(for: .milliseconds(100))
+        
+        _ = try await transport.sendRaw("ATL0")
+        try await Task.sleep(for: .milliseconds(100))
+        
+        _ = try await transport.sendRaw("ATS0")
+        try await Task.sleep(for: .milliseconds(100))
+    }
+    
+    private func snapshotStream() -> AsyncStream<Snapshot> {
         AsyncStream { continuation in
-            let task = Task {
+            let task = Task { [weak self] in
                 while !Task.isCancelled {
-                    let snapshot = await readSnapshot()
+                    guard let self else { break }
+                    
+                    let snapshot = await self.readSnapshot()
                     continuation.yield(snapshot)
-                    try? await Task.sleep(nanoseconds: 250_000_000)
+                    
+                    do {
+                        try await Task.sleep(for: .milliseconds(500))
+                    } catch {
+                        break
+                    }
                 }
             }
             
@@ -59,5 +140,33 @@ final class OBDService {
                 task.cancel()
             }
         }
+    }
+    
+    private func readSnapshot() async -> Snapshot {
+        let rpm = await read(PID.engineRpm, fallback: 0)
+        let speed = await read(PID.vehicleSpeed, fallback: 0)
+        let coolantTemp = await read(PID.coolantTemperature, fallback: 0)
+        let throttlePosition = await read(PID.throttlePosition, fallback: 0)
+        
+        return Snapshot(
+            rpm: rpm,
+            speed: speed,
+            coolantTemp: coolantTemp,
+            throttlePosition: throttlePosition
+        )
+    }
+    
+    func read<T>(_ pid: OBDParameter<T>, fallback: T) async -> T {
+        guard connection == .ready else {
+            return fallback
+        }
+        
+        do {
+            return try await transport.query(pid)
+        } catch {
+            print(error)
+        }
+        
+        return fallback
     }
 }

@@ -9,10 +9,10 @@ import SwiftUI
 
 struct DashboardView: View {
     
-    @StateObject private var viewModel: DashboardViewModel
+    @ObservedObject private var obdService: OBDService
     
-    init(viewModel: DashboardViewModel) {
-        _viewModel = StateObject(wrappedValue: viewModel)
+    init(obdService: OBDService) {
+        _obdService = ObservedObject(wrappedValue: obdService)
     }
     
     var body: some View {
@@ -21,11 +21,11 @@ struct DashboardView: View {
                 .font(.title3)
             
             VStack(alignment: .leading, spacing: 8) {
-                Text("RPM: \(viewModel.snapshot?.rpm ?? 0)")
-                Text("Coolant Temp: \(viewModel.snapshot?.coolantTemp ?? 0) \(PID.coolantTemperature.unit)")
-                Text("Speed: \(viewModel.snapshot?.speed ?? 0) \(PID.vehicleSpeed.unit)")
-                Text("Throttle Position: \(viewModel.snapshot?.throttlePosition ?? 0) \(PID.throttlePosition.unit)")
-                Text("Timestamp: \((viewModel.snapshot?.timestamp ?? Date()).formatted(date: .numeric, time: .standard))")
+                Text("RPM: \(obdService.snapshot?.rpm ?? 0)")
+                Text("Coolant Temp: \(obdService.snapshot?.coolantTemp ?? 0) \(PID.coolantTemperature.unit)")
+                Text("Speed: \(obdService.snapshot?.speed ?? 0) \(PID.vehicleSpeed.unit)")
+                Text("Throttle Position: \(obdService.snapshot?.throttlePosition ?? 0) \(PID.throttlePosition.unit)")
+                Text("Timestamp: \((obdService.snapshot?.timestamp ?? Date()).formatted(date: .numeric, time: .standard))")
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 24)
@@ -33,9 +33,9 @@ struct DashboardView: View {
             Spacer()
             
             Button(action: {
-                viewModel.isScanning ? viewModel.stop() : viewModel.start()
+                obdService.isStreaming ? obdService.stopStream() : obdService.startStream()
             }) {
-                Text(viewModel.isScanning ? "Stop Scan" : "Start Scan")
+                Text(obdService.isStreaming ? "Stop Scan" : "Start Scan")
                     .padding(.vertical, 8)
                     .frame(maxWidth: .infinity)
                     .background(Color.blue)
@@ -44,6 +44,7 @@ struct DashboardView: View {
             }
             .padding(.horizontal, 20)
             .padding(.bottom, 8)
+            .disabled(obdService.connection != .ready)
         }
         .padding()
     }
@@ -54,10 +55,6 @@ struct DashboardView: View {
     let service = OBDService(
         transport: transport
     )
-    
-    let viewModel = DashboardViewModel(
-        obdService: service
-    )
 
-    DashboardView(viewModel: viewModel)
+    DashboardView(obdService: service)
 }
