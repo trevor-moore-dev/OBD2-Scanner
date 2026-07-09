@@ -205,14 +205,14 @@ final class BluetoothTransport:
         }
         
         for characteristic in characteristics {
-            if characteristic.properties.contains(.write) ||
-                characteristic.properties.contains(.writeWithoutResponse) {
-                writeCharacteristic = characteristic
-            }
-            
-            if characteristic.properties.contains(.notify) {
-                notifyCharacteristic = characteristic
-                peripheral.setNotifyValue(true, for: characteristic)
+            switch characteristic.uuid.uuidString.uppercased() {
+                case "FFF2":
+                    writeCharacteristic = characteristic
+                case "FFF1":
+                    notifyCharacteristic = characteristic
+                    peripheral.setNotifyValue(true, for: characteristic)
+                default:
+                    break
             }
         }
     }
@@ -306,7 +306,7 @@ final class BluetoothTransport:
                 return
             }
             
-            device.writeValue(writeData, for: characteristic, type: .withoutResponse)
+            device.writeValue(writeData, for: characteristic, type: .withResponse)
         }
     }
     
@@ -321,9 +321,22 @@ final class BluetoothTransport:
             .replacingOccurrences(of: ">", with: "")
             .trimmingCharacters(in: .whitespaces)
         
-        return cleaned
-            .split(separator: " ")
-            .compactMap { UInt8($0, radix: 16) }
+        guard let response = cleaned.split(separator: "\n").first else {
+            throw PIDError.decodingError("Empty response.")
+        }
+        
+        let hex = String(response)
+        
+        guard hex.count % 2 == 0 else {
+            throw PIDError.decodingError("Invalid hex response: \(hex)")
+        }
+        
+        return stride(from: 0, to: hex.count, by: 2).compactMap { index in
+            let start = hex.index(hex.startIndex, offsetBy: index)
+            let end = hex.index(start, offsetBy: 2)
+
+            return UInt8(hex[start..<end], radix: 16)
+        }
     }
     
     private func setState(_ newState: ConnectionState) {
