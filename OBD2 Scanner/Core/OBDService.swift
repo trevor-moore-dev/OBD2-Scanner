@@ -106,16 +106,16 @@ final class OBDService: ObservableObject {
     }
     
     private func initialize() async throws {
-        _ = try await transport.sendRaw("ATZ")
+        // find elm327 spec here:
+        // https://www.elmelectronics.com/wp-content/uploads/2017/01/ELM327DS.pdf
+        
+        _ = try await transport.sendRaw("ATZ") // reset all
         try await Task.sleep(for: .seconds(2))
         
-        _ = try await transport.sendRaw("ATE0")
+        _ = try await transport.sendRaw("ATE0") // echo off (0 off 1 on)
         try await Task.sleep(for: .milliseconds(100))
         
-        _ = try await transport.sendRaw("ATL0")
-        try await Task.sleep(for: .milliseconds(100))
-        
-        _ = try await transport.sendRaw("ATS0")
+        _ = try await transport.sendRaw("ATL0") // linefeeds off (0 off 1 on)
         try await Task.sleep(for: .milliseconds(100))
     }
     
