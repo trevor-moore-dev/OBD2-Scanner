@@ -325,9 +325,16 @@ final class BluetoothTransport:
             throw PIDError.decodingError("Empty response.")
         }
         
-        return hex
-            .split(separator: " ")
-            .compactMap{ UInt8($0, radix: 16) }
+        guard hex.count % 2 == 0 else {
+            throw PIDError.decodingError("Invalid hex response: \(hex)")
+        }
+        
+        return stride(from: 0, to: hex.count, by: 2).compactMap { index in
+            let start = hex.index(hex.startIndex, offsetBy: index)
+            let end = hex.index(start, offsetBy: 2)
+
+            return UInt8(hex[start..<end], radix: 16)
+        }
     }
     
     private func setState(_ newState: ConnectionState) {
