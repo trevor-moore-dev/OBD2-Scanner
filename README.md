@@ -1,6 +1,6 @@
 # OBD-II Scanner Swift iOS Application
 
-OBD2 Scanner iOS Application built in Swift. Can be used alongside any OBD2 Bluetooth Scanner plugged into your vehicle's diagnostics port (currently configured for Veepeak OBDCheck BLE+).
+OBD2 Scanner iOS Application built in Swift. Can be used alongside any OBD2 Bluetooth adapter plugged into your vehicle's diagnostics port (currently configured for Veepeak OBDCheck BLE+).
 
 ## Resources
 - [ELM327 Spec](https://www.elmelectronics.com/wp-content/uploads/2017/01/ELM327DS.pdf)
