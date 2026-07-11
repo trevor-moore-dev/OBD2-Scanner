@@ -1,5 +1,5 @@
 //
-//  SplashView.swift
+//  SplashScreenView.swift
 //  OBD2 Scanner
 //
 //  Created by Trevor Moore on 7/10/26.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct SplashView: View {
+struct SplashScreenView: View {
     
     @State private var isAnimating: Bool = false
     
