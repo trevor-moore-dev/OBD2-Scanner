@@ -86,6 +86,34 @@ final class OBDService: ObservableObject {
         isStreaming = false
     }
     
+    func query<T>(_ pid: OBDParameter<T>, fallback: T) async -> T {
+        guard connection == .ready else {
+            return fallback
+        }
+        
+        do {
+            return try await transport.query(pid)
+        } catch {
+            print(error)
+        }
+        
+        return fallback
+    }
+    
+    func sendRaw(_ command: String) async -> String {
+        guard connection == .ready else {
+            return "Connection is \(connection)..."
+        }
+        
+        do {
+            let bytes = try await transport.sendRaw(command)
+            return String(bytes: bytes, encoding: .ascii)!
+        } catch {
+            print(error)
+            return error.localizedDescription
+        }
+    }
+    
     private func connectWithRetry(maxAttempts: Int) async throws {
         var remaining = maxAttempts
         
@@ -117,9 +145,6 @@ final class OBDService: ObservableObject {
         
         _ = try await transport.sendRaw("ATL0") // linefeeds off (0 off 1 on)
         try await Task.sleep(for: .milliseconds(100))
-        
-        _ = try await transport.sendRaw("ATS0") // spaces off (0 off 1 on)
-        try await Task.sleep(for: .milliseconds(100))
     }
     
     private func snapshotStream() -> AsyncStream<Snapshot> {
@@ -146,10 +171,10 @@ final class OBDService: ObservableObject {
     }
     
     private func readSnapshot() async -> Snapshot {
-        let rpm = await read(PID.engineRpm, fallback: 0)
-        let speed = await read(PID.vehicleSpeed, fallback: 0)
-        let coolantTemp = await read(PID.coolantTemperature, fallback: 0)
-        let throttlePosition = await read(PID.throttlePosition, fallback: 0)
+        let rpm = await query(PID.engineRpm, fallback: 0)
+        let speed = await query(PID.vehicleSpeed, fallback: 0)
+        let coolantTemp = await query(PID.coolantTemperature, fallback: 0)
+        let throttlePosition = await query(PID.throttlePosition, fallback: 0)
         
         return Snapshot(
             rpm: rpm,
@@ -157,19 +182,5 @@ final class OBDService: ObservableObject {
             coolantTemp: coolantTemp,
             throttlePosition: throttlePosition
         )
-    }
-    
-    func read<T>(_ pid: OBDParameter<T>, fallback: T) async -> T {
-        guard connection == .ready else {
-            return fallback
-        }
-        
-        do {
-            return try await transport.query(pid)
-        } catch {
-            print(error)
-        }
-        
-        return fallback
     }
 }

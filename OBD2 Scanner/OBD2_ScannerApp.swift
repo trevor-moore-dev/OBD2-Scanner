@@ -22,9 +22,9 @@ struct OBD2_ScannerApp: App {
         WindowGroup {
             Group {
                 if obdService.connection != .ready {
-                    SplashView()
+                    SplashScreenView()
                 } else {
-                    DashboardView(obdService: obdService)
+                    LayoutView(obdService: obdService)
                 }
             }
             .animation(.easeInOut(duration: 0.6), value: obdService.connection)
