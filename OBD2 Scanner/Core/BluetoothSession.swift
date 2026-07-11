@@ -17,7 +17,7 @@ class BluetoothSession: Equatable {
         self.buffer = Data()
         self.continuation = continuation
         self.timeout = Task { [weak self] in
-            try? await Task.sleep(for: .milliseconds(250))
+            try? await Task.sleep(for: .seconds(1))
             self?.continuation?.resume(throwing: BluetoothError.sessionTimeout)
             self?.continuation = nil
         }

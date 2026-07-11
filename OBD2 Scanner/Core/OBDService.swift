@@ -132,7 +132,7 @@ final class OBDService: ObservableObject {
                     continuation.yield(snapshot)
                     
                     do {
-                        try await Task.sleep(for: .milliseconds(500))
+                        try await Task.sleep(for: .seconds(1))
                     } catch {
                         break
                     }
