@@ -175,6 +175,7 @@ final class BluetoothTransport:
         didDiscoverServices error: Error?
     ) {
         guard error == nil else {
+            print(error!)
             finishConnect(.failure(error!))
             setState(.idle)
             return
@@ -195,6 +196,7 @@ final class BluetoothTransport:
         error: Error?
     ) {
         guard error == nil else {
+            print(error!)
             finishConnect(.failure(error!))
             setState(.idle)
             return
@@ -204,15 +206,23 @@ final class BluetoothTransport:
             return
         }
         
-        for characteristic in characteristics {
-            switch characteristic.uuid.uuidString.uppercased() {
-                case "FFF2":
-                    writeCharacteristic = characteristic
-                case "FFF1":
-                    notifyCharacteristic = characteristic
-                    peripheral.setNotifyValue(true, for: characteristic)
-                default:
-                    break
+        if service.uuid.uuidString.uppercased() == "FFF0" {
+            for characteristic in characteristics {
+                switch characteristic.uuid.uuidString.uppercased() {
+                    case "FFF2":
+                        writeCharacteristic = characteristic
+                    case "FFF1":
+                        notifyCharacteristic = characteristic
+                        
+                        let props = characteristic.properties
+                        if props.contains(.notify) || props.contains(.indicate) {
+                            peripheral.setNotifyValue(true, for: characteristic)
+                        } else {
+                            print("Unexpected: FFF1 in service FFF0 does not support notifications.")
+                        }
+                    default:
+                        break
+                }
             }
         }
     }
@@ -223,6 +233,7 @@ final class BluetoothTransport:
         error: Error?
     ) {
         guard characteristic.isNotifying else {
+            print(error ?? BluetoothError.connectionFailed)
             finishConnect(.failure(error ?? BluetoothError.connectionFailed))
             setState(.idle)
             return
