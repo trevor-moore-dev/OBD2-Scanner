@@ -8,18 +8,19 @@ OBD2 Scanner iOS Application built in Swift. Can be used alongside any OBD2 Blue
 - [DTC Descriptions](https://gist.github.com/wzr1337/8af2731a5ffa98f9d506537279da7a0e)
 
 ## TODO
-1. Bluetooth Connect UX
-2. Multi-line PID requests
-3. Support standard PIDs
-4. Read number of DTCs
-5. Persist DTC descriptions
-6. Render DTCs
-7. Render Pending DTCs
-8. Clear DTCs
-9. Persist Vehicle Information
-10. Persist Vehicle Snapshots
-11. Render Vehicle Snapshots
-12. Background Scanning
+1. ~~Bluetooth Connect UX~~
+2. ~~Terminal View~~
+3. Multi-line PID requests
+4. Support standard PIDs
+5. Read number of DTCs
+6. Persist DTC descriptions
+7. Render DTCs
+8. Render Pending DTCs
+9. Clear DTCs
+10. Persist Vehicle Information
+11. Persist Vehicle Snapshots
+12. Render Vehicle Snapshots
+13. Background Scanning
 
 ## Notes
 
@@ -52,8 +53,6 @@ OBD2 Scanner iOS Application built in Swift. Can be used alongside any OBD2 Blue
 - `01 0B` - Intake manifold absolute pressure
 - `01 0F` - Intake air pressure
 - `01 0E` - Timing advance
-
-
 
 #### Read Number of DTCs
 - Example: `01 01`
