@@ -9,23 +9,28 @@ import SwiftUI
 
 @main
 struct OBD2_ScannerApp: App {
-    
-    private let transport: OBDTransport
-    private let obdService: OBDService
+
+    @ObservedObject private var obdService: OBDService
     
     init() {
-        transport = BluetoothTransport()
-        obdService = OBDService(
-            transport: transport
-        )
+        _obdService = ObservedObject(wrappedValue: OBDService(
+            transport: BluetoothTransport()
+        ))
     }
     
     var body: some Scene {
         WindowGroup {
-            DashboardView(obdService: obdService)
-                .task {
-                    await obdService.connect()
+            Group {
+                if obdService.connection != .ready {
+                    SplashView()
+                } else {
+                    DashboardView(obdService: obdService)
                 }
+            }
+            .animation(.easeInOut(duration: 0.6), value: obdService.connection)
+            .task {
+                await obdService.connect()
+            }
         }
     }
 }
