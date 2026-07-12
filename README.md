@@ -12,15 +12,15 @@ OBD2 Scanner iOS Application built in Swift. Can be used alongside any OBD2 Blue
 1. ~~Bluetooth Transport~~
 2. ~~Setup PID Data Stream~~
 3. ~~Terminal View~~
-4. Multi-line PID requests
-5. Unify Response Parsing
-6. Render Vehicle Information (Make/Model via VIN)
-7. Support standard PIDs
-8. Read number of DTCs
-9. ~~Persist DTC descriptions~~
-10. ~~Render DTCs~~
-11. Render Pending DTCs
-12. Clear DTCs
+4. ~~Persist DTC descriptions~~
+5. ~~Render DTCs~~
+6. Multi-line PID requests
+7. Unify Response Parsing
+8. Render Vehicle Information (Make/Model via VIN)
+9. Support standard PIDs
+10. Read number of DTCs
+11. Clear DTCs
+12. Render Pending DTCs
 13. Persist Vehicle Information
 14. Persist Vehicle Snapshots
 15. Render Vehicle Snapshots
