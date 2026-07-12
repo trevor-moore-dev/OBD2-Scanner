@@ -321,7 +321,7 @@ final class BluetoothTransport:
         }
     }
     
-    private func parseResponse(_ bytes: [UInt8]) throws -> [UInt8] {
+    func parseResponse(_ bytes: [UInt8]) throws -> [UInt8] {
         guard let string = String(bytes: bytes, encoding: .ascii) else {
             throw PIDError.decodingError("Invalid ASCII response.")
         }
