@@ -6,6 +6,7 @@ OBD2 Scanner iOS Application built in Swift. Can be used alongside any OBD2 Blue
 - [ELM327 Spec](https://www.elmelectronics.com/wp-content/uploads/2017/01/ELM327DS.pdf)
 - [OBD-II PIDs](https://en.wikipedia.org/wiki/OBD-II_PIDs#Service_03_(no_PID_required))
 - [DTC Descriptions](https://gist.github.com/wzr1337/8af2731a5ffa98f9d506537279da7a0e)
+- [VIN Decoding](https://vpic.nhtsa.dot.gov/api//vehicles/DecodeVin/5Y2SL65876Z438228?format=json)
 
 ## TODO
 1. ~~Bluetooth Transport~~
@@ -77,7 +78,7 @@ OBD2 Scanner iOS Application built in Swift. Can be used alongside any OBD2 Blue
 49 02 04 35 42 31 32
 49 02 05 33 34 35 36
 ```
-- The first 3 bytes on each row can be ignored, the last 4 bytes on each row are the in order response for the VIN. The VIN will be used to (obviously) ID and persist vehicles that the adapter has been connected to and scanned, as well as decoding make/model. See [here](https://www.youtube.com/watch?v=PMLqPYKfazI&t=20s) for further details.
+- The first 3 bytes on each row can be ignored, the last 4 bytes on each row are the in order response for the VIN. The VIN will be used to (obviously) ID and persist vehicles that the adapter has been connected to and scanned, as well as decoding make/model. See [here](https://vpic.nhtsa.dot.gov/api//vehicles/DecodeVin/5Y2SL65876Z438228?format=json) for further details.
 
 #### Battery Voltage
 - Example: `AT RV`
