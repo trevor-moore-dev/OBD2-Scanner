@@ -10,5 +10,4 @@ protocol OBDTransport {
     func disconnect()
     func query<T>(_ parameter: OBDParameter<T>) async throws -> T
     func sendRaw(_ command: String) async throws -> [UInt8]
-    func parseResponse(_ bytes: [UInt8]) throws -> [UInt8]
 }

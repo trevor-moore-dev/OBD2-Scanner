@@ -30,7 +30,7 @@ final class DTCService: ObservableObject {
             var allBytes: [UInt8] = []
 
             for line in lines {
-                var cleanedLine = line
+                let cleanedLine = line
                     .replacingOccurrences(of: "\n", with: "")
                     .replacingOccurrences(of: ">", with: "")
                     .replacingOccurrences(of: " ", with: "")
