@@ -20,7 +20,7 @@ final class OBDService: ObservableObject {
     
     @Published private(set) var connection: OBDConnection = .unknown
     @Published private(set) var isStreaming: Bool = false
-    @Published private(set) var snapshot: Snapshot?
+    @Published private(set) var snapshots: [any AnySnapshot] = []
     
     private var streamTask: Task<Void, Never>?
     private let transport: OBDTransport
@@ -50,7 +50,7 @@ final class OBDService: ObservableObject {
     
     func disconnect() {
         defer {
-            snapshot = nil
+            snapshots = []
             connection = .unknown
         }
         
@@ -74,8 +74,8 @@ final class OBDService: ObservableObject {
                 isStreaming = false
             }
             
-            for await snapshot in self.snapshotStream() {
-                self.snapshot = snapshot
+            for await snapshots in self.snapshotsStream() {
+                self.snapshots = snapshots
             }
         }
     }
@@ -147,14 +147,14 @@ final class OBDService: ObservableObject {
         try await Task.sleep(for: .milliseconds(100))
     }
     
-    private func snapshotStream() -> AsyncStream<Snapshot> {
+    private func snapshotsStream() -> AsyncStream<[any AnySnapshot]> {
         AsyncStream { continuation in
             let task = Task { [weak self] in
                 while !Task.isCancelled {
                     guard let self else { break }
                     
-                    let snapshot = await self.readSnapshot()
-                    continuation.yield(snapshot)
+                    let snapshots = await self.readSnapshots()
+                    continuation.yield(snapshots)
                     
                     do {
                         try await Task.sleep(for: .seconds(1))
@@ -170,17 +170,41 @@ final class OBDService: ObservableObject {
         }
     }
     
-    private func readSnapshot() async -> Snapshot {
+    private func readSnapshots() async -> [any AnySnapshot] {
         let rpm = await query(PID.engineRpm, fallback: 0)
         let speed = await query(PID.vehicleSpeed, fallback: 0)
         let coolantTemp = await query(PID.coolantTemperature, fallback: 0)
         let throttlePosition = await query(PID.throttlePosition, fallback: 0)
         
-        return Snapshot(
-            rpm: rpm,
-            speed: speed,
-            coolantTemp: coolantTemp,
-            throttlePosition: throttlePosition
-        )
+        return [
+            Snapshot<Double>(
+                id: PID.engineRpm.command,
+                name: PID.engineRpm.label,
+                value: rpm,
+                formatValue: PID.engineRpm.format,
+                unit: nil
+            ),
+            Snapshot<Double>(
+                id: PID.vehicleSpeed.command,
+                name: PID.vehicleSpeed.label,
+                value: speed,
+                formatValue: PID.vehicleSpeed.format,
+                unit: PID.vehicleSpeed.unit
+            ),
+            Snapshot<Double>(
+                id: PID.coolantTemperature.command,
+                name: PID.coolantTemperature.label,
+                value: coolantTemp,
+                formatValue: PID.coolantTemperature.format,
+                unit: PID.coolantTemperature.unit
+            ),
+            Snapshot<Double>(
+                id: PID.throttlePosition.command,
+                name: PID.throttlePosition.label,
+                value: throttlePosition,
+                formatValue: PID.throttlePosition.format,
+                unit: PID.throttlePosition.unit
+            ),
+        ]
     }
 }

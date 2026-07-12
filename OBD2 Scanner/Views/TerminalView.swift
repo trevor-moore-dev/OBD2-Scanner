@@ -13,14 +13,13 @@ struct TerminalLine: Identifiable {
     let type: LineType
     
     enum LineType {
-        case command, response, system
+        case command, response
     }
     
     var color: Color {
         switch type {
-            case .command: return .green
+            case .command: return .blue
             case .response: return .gray
-            case .system: return .blue
         }
     }
 }
@@ -70,13 +69,13 @@ struct TerminalView: View {
                 HStack(spacing: 4) {
                     Text(">")
                         .font(.system(.body, design: .monospaced))
-                        .foregroundColor(.green)
+                        .foregroundColor(.blue)
                         .bold()
                     
                     TextField("", text: $prompt)
                         .font(.system(.body, design: .monospaced))
                         .foregroundColor(.white)
-                        .accentColor(.green)
+                        .accentColor(.blue)
                         .autocorrectionDisabled()
                         .textInputAutocapitalization(.characters)
                         .focused($isInputFocused)

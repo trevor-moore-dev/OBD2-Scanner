@@ -11,10 +11,19 @@ import SwiftUI
 struct OBD2_ScannerApp: App {
 
     @ObservedObject private var obdService: OBDService
+    @ObservedObject private var dtcService: DTCService
     
     init() {
+        let transport = BluetoothTransport()
+        let repository = DTCRepository()
+        
         _obdService = ObservedObject(wrappedValue: OBDService(
-            transport: BluetoothTransport()
+            transport: transport
+        ))
+        
+        _dtcService = ObservedObject(wrappedValue: DTCService(
+            transport: transport,
+            repository: repository
         ))
     }
     
@@ -24,7 +33,7 @@ struct OBD2_ScannerApp: App {
                 if obdService.connection != .ready {
                     SplashScreenView()
                 } else {
-                    LayoutView(obdService: obdService)
+                    LayoutView(obdService: obdService, dtcService: dtcService)
                 }
             }
             .animation(.easeInOut(duration: 0.6), value: obdService.connection)

@@ -8,16 +8,20 @@
 import SwiftUI
 
 enum Tab {
-    case home, terminal
+    case home
+    case diagnostics
+    case terminal
 }
 
 struct LayoutView: View {
     
     @State private var tab: Tab = .home
     @ObservedObject private var obdService: OBDService
+    @ObservedObject private var dtcService: DTCService
     
-    init(obdService: OBDService) {
+    init(obdService: OBDService, dtcService: DTCService) {
         _obdService = ObservedObject(wrappedValue: obdService)
+        _dtcService = ObservedObject(wrappedValue: dtcService)
     }
     
     var body: some View {
@@ -27,6 +31,12 @@ struct LayoutView: View {
                     Label("Home", systemImage: "house")
                 }
                 .tag(Tab.home)
+            
+            DiagnosticsView(dtcService: dtcService)
+                .tabItem {
+                    Label("Diagnostics", systemImage: "engine.combustion")
+                }
+                .tag(Tab.diagnostics)
             
             TerminalView(obdService: obdService)
                 .tabItem {
@@ -48,8 +58,8 @@ struct LayoutView: View {
     private func handleTabTap(for tab: Tab) async {
         guard !Task.isCancelled else { return }
         switch tab {
-            case .home: _ = await obdService.sendRaw("ATS0")
             case .terminal: _ = await obdService.sendRaw("ATS1")
+            default: _ = await obdService.sendRaw("ATS0")
         }
     }
 }
