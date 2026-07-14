@@ -9,13 +9,16 @@ import SwiftUI
 
 struct DiagnosticsView: View {
     
-    @ObservedObject private var dtcService: DTCService
+    @ObservedObject private var obdService: OBDService
     
     @State private var errorCodes: [DTC] = []
     @State private var isScanning: Bool = false
     
-    init(dtcService: DTCService) {
-        _dtcService = ObservedObject(wrappedValue: dtcService)
+    private let dtcRepository: DTCRepository
+    
+    init(obdService: OBDService, dtcRepository: DTCRepository) {
+        _obdService = ObservedObject(wrappedValue: obdService)
+        self.dtcRepository = dtcRepository
     }
     
     var body: some View {
@@ -89,7 +92,22 @@ struct DiagnosticsView: View {
     
     private func runDiagnosticsScan() async {
         isScanning = true
-        errorCodes = await dtcService.readDiagnosticTroubleCodes()
+        errorCodes = []
+        
+        let codes = await obdService.query(
+            PID.diagnosticTroubleCodes,
+            fallback: []
+        )
+        
+        for code in codes {
+            errorCodes.append(
+                DTC(
+                    code: code,
+                    description: await dtcRepository.lookup(code)
+                )
+            )
+        }
+        
         isScanning = false
     }
 }

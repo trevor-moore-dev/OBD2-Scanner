@@ -15,13 +15,15 @@ enum Tab {
 
 struct LayoutView: View {
     
-    @State private var tab: Tab = .home
     @ObservedObject private var obdService: OBDService
-    @ObservedObject private var dtcService: DTCService
     
-    init(obdService: OBDService, dtcService: DTCService) {
+    @State private var tab: Tab = .home
+    
+    private var dtcRepository: DTCRepository
+    
+    init(obdService: OBDService, dtcRepository: DTCRepository) {
         _obdService = ObservedObject(wrappedValue: obdService)
-        _dtcService = ObservedObject(wrappedValue: dtcService)
+        self.dtcRepository = dtcRepository
     }
     
     var body: some View {
@@ -32,7 +34,10 @@ struct LayoutView: View {
                 }
                 .tag(Tab.home)
             
-            DiagnosticsView(dtcService: dtcService)
+            DiagnosticsView(
+                obdService: obdService,
+                dtcRepository: dtcRepository
+            )
                 .tabItem {
                     Label("Diagnostics", systemImage: "engine.combustion")
                 }

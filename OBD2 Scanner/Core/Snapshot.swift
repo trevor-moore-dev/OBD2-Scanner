@@ -9,6 +9,7 @@ import Foundation
 
 protocol AnySnapshot {
     var id: String { get }
+    var title: String? { get }
     var name: String { get }
     var unit: String? { get }
     var timestamp: Date { get }
@@ -17,6 +18,7 @@ protocol AnySnapshot {
 
 struct Snapshot<T>: AnySnapshot {
     let id: String
+    let title: String?
     let name: String
     let value: T
     let formatValue: (T) -> String

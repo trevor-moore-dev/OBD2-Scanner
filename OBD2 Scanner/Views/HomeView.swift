@@ -18,45 +18,49 @@ struct HomeView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                if obdService.isStreaming {
-                    if obdService.snapshots.isEmpty {
-                        VStack(spacing: 16) {
-                            ProgressView()
-                                .scaleEffect(1.5)
-                            Text("Waiting for scan responses...")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                        }
-                        .frame(maxHeight: .infinity)
-                    } else {
-                        List(obdService.snapshots, id: \.id) { snapshot in
-                            VStack(alignment: .leading, spacing: 4) {
-                                HStack {
-                                    Text(snapshot.name)
-                                        .font(.body)
-                                        .foregroundColor(.primary)
-                                        .padding(.top, 2)
-                                    
-                                    Text(snapshot.getValue())
-                                        .font(.system(.body, design: .monospaced))
-                                        .bold()
-                                        .foregroundColor(.blue)
-                                        .padding(.horizontal, 8)
-                                        .padding(.vertical, 4)
-                                        .background(Color.blue.opacity(0.1))
-                                        .cornerRadius(4)
-                                    
-                                    Spacer()
-                                }
-                                
-                                Text(snapshot.timestamp.formatted(date: .numeric, time: .standard))
+                if !obdService.snapshots.isEmpty {
+                    List(obdService.snapshots, id: \.id) { snapshot in
+                        VStack(alignment: .leading, spacing: 4) {
+                            if let title = snapshot.title {
+                                Text(title)
                                     .font(.body)
-                                    .foregroundColor(.secondary)
-                                    .padding(.top, 2)
+                                    .foregroundColor(.primary)
                             }
-                            .padding(.vertical, 4)
+                            
+                            HStack {
+                                Text(snapshot.name)
+                                    .font(.body)
+                                    .foregroundColor(.primary)
+                                    .padding(.top, 2)
+                                
+                                Text(snapshot.getValue())
+                                    .font(.system(.body, design: .monospaced))
+                                    .bold()
+                                    .foregroundColor(.blue)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(Color.blue.opacity(0.1))
+                                    .cornerRadius(4)
+                                
+                                Spacer()
+                            }
+                            
+                            Text(snapshot.timestamp.formatted(date: .numeric, time: .standard))
+                                .font(.body)
+                                .foregroundColor(.secondary)
+                                .padding(.top, 2)
                         }
+                        .padding(.vertical, 4)
                     }
+                } else if obdService.isStreaming {
+                    VStack(spacing: 16) {
+                        ProgressView()
+                            .scaleEffect(1.5)
+                        Text("Waiting for scan responses...")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                    .frame(maxHeight: .infinity)
                 } else {
                     VStack(spacing: 12) {
                         Image(systemName: "link")

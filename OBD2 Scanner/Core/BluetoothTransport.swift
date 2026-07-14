@@ -272,8 +272,13 @@ final class BluetoothTransport:
     }
     
     func query<T>(_ parameter: OBDParameter<T>) async throws -> T {
-        let bytes = try await sendRaw(parameter.command)
-        let parsed = try parseResponse(bytes)
+        let bytes = try await sendRaw(parameter.command())
+        let parsed = try parseResponse(
+            bytes,
+            mode: parameter.mode,
+            pid: parameter.pid
+        )
+        
         return try parameter.decode(parsed)
     }
     
@@ -321,31 +326,54 @@ final class BluetoothTransport:
         }
     }
     
-    func parseResponse(_ bytes: [UInt8]) throws -> [UInt8] {
+    private func parseResponse(_ bytes: [UInt8], mode: UInt8, pid: UInt8?) throws -> [UInt8] {
         guard let string = String(bytes: bytes, encoding: .ascii) else {
             throw PIDError.decodingError("Invalid ASCII response.")
         }
         
-        let hex = string
-            .replacingOccurrences(of: "\r", with: "")
-            .replacingOccurrences(of: "\n", with: "")
-            .replacingOccurrences(of: ">", with: "")
-            .trimmingCharacters(in: .whitespaces)
+        let lines = string.components(separatedBy: "\r")
+        var allBytes: [UInt8] = []
         
-        guard !hex.isEmpty else {
-            throw PIDError.decodingError("Empty response.")
+        for line in lines {
+            let cleanedLine = line
+                .replacingOccurrences(of: "\n", with: "")
+                .replacingOccurrences(of: ">", with: "")
+                .replacingOccurrences(of: " ", with: "")
+                .trimmingCharacters(in: .whitespaces)
+            
+            guard !cleanedLine.isEmpty && cleanedLine.count % 2 == 0 else {
+                continue
+            }
+            
+            var lineBytes: [UInt8] = []
+            var byteIndex = 0
+            
+            for i in stride(from: 0, to: cleanedLine.count - 1, by: 2) {
+                let start = cleanedLine.index(cleanedLine.startIndex, offsetBy: i)
+                let end = cleanedLine.index(start, offsetBy: 2)
+                
+                guard let byte = UInt8(cleanedLine[start..<end], radix: 16) else {
+                    continue
+                }
+                
+                if byteIndex == 0 && byte == (mode | 0x40) {
+                    byteIndex += 1
+                    continue
+                }
+                
+                if byteIndex == 1, let pid, byte == pid {
+                    byteIndex += 1
+                    continue
+                }
+                
+                lineBytes.append(byte)
+                byteIndex += 1
+            }
+            
+            allBytes.append(contentsOf: lineBytes)
         }
-        
-        guard hex.count % 2 == 0 else {
-            throw PIDError.decodingError("Invalid hex response: \(hex)")
-        }
-        
-        return stride(from: 0, to: hex.count, by: 2).compactMap { index in
-            let start = hex.index(hex.startIndex, offsetBy: index)
-            let end = hex.index(start, offsetBy: 2)
 
-            return UInt8(hex[start..<end], radix: 16)
-        }
+        return allBytes
     }
     
     private func setState(_ newState: ConnectionState) {
