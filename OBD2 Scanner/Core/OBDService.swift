@@ -6,10 +6,12 @@
 //
 
 import Foundation
+import CoreBluetooth
 internal import Combine
 
 enum OBDConnection {
     case unknown
+    case scanning
     case connecting
     case ready
     case failed
@@ -24,31 +26,59 @@ enum OBDError: Error {
 final class OBDService: ObservableObject {
     
     @Published private(set) var connection: OBDConnection = .unknown
+    @Published private(set) var devices: [CBPeripheral] = []
+    @Published private(set) var connectedDevice: CBPeripheral?
     @Published private(set) var isStreaming: Bool = false
     @Published private(set) var snapshots: [any AnySnapshot] = []
     
     private var streamTask: Task<Void, Never>?
-    private let transport: OBDTransport
+    private var transport: OBDTransport
     
     init(transport: OBDTransport) {
         self.transport = transport
+        self.transport.onPeripheralsUpdated = { [weak self] peripherals in
+            self?.devices = peripherals
+        }
     }
     
-    func connect() async {
+    func startScan() async {
         guard connection == .unknown || connection == .failed else {
+            return
+        }
+        
+        connection = .scanning
+        
+        do {
+            try await transport.startScan()
+        } catch {
+            print(error)
+            transport.stopScan()
+            connection = .unknown
+        }
+    }
+    
+    func stopScan() {
+        transport.stopScan()
+        connection = .unknown
+    }
+    
+    func connect(_ peripheral: CBPeripheral) async {
+        guard connection == .scanning else {
             return
         }
         
         connection = .connecting
         
         do {
-            try await connectWithRetry(maxAttempts: 3)
+            try await connectWithRetry(peripheral, maxAttempts: 3)
             try await initialize()
             
+            connectedDevice = peripheral
             connection = .ready
         } catch {
             print(error)
             transport.disconnect()
+            connectedDevice = nil
             connection = .failed
         }
     }
@@ -56,6 +86,7 @@ final class OBDService: ObservableObject {
     func disconnect() {
         defer {
             snapshots = []
+            connectedDevice = nil
             connection = .unknown
         }
         
@@ -119,12 +150,12 @@ final class OBDService: ObservableObject {
         }
     }
     
-    private func connectWithRetry(maxAttempts: Int) async throws {
+    private func connectWithRetry(_ peripheral: CBPeripheral, maxAttempts: Int) async throws {
         var remaining = maxAttempts
         
         while remaining > 0 {
             do {
-                try await transport.connect()
+                try await transport.connect(peripheral)
                 return
             } catch {
                 remaining -= 1
@@ -143,22 +174,12 @@ final class OBDService: ObservableObject {
         // https://www.elmelectronics.com/wp-content/uploads/2017/01/ELM327DS.pdf
         
         _ = try await transport.sendRaw("ATZ") // reset all
-        try await Task.sleep(for: .seconds(2))
-        
         _ = try await transport.sendRaw("ATE0") // echo off (0 off 1 on)
-        try await Task.sleep(for: .milliseconds(100))
-        
         _ = try await transport.sendRaw("ATL0") // linefeeds off (0 off 1 on)
-        try await Task.sleep(for: .milliseconds(100))
-        
         _ = try await transport.sendRaw("ATS0") // spaces off (0 off 1 on)
-        try await Task.sleep(for: .milliseconds(100))
-        
         _ = try await transport.sendRaw("ATH0") // headers off (0 off 1 on)
-        try await Task.sleep(for: .milliseconds(100))
-        
         _ = try await transport.sendRaw("ATSP0") // auto detect protocol
-        try await Task.sleep(for: .milliseconds(100))
+        _ = try await transport.sendRaw("0100") // fire and forget first PID
     }
     
     private func snapshotsStream() -> AsyncStream<[any AnySnapshot]> {

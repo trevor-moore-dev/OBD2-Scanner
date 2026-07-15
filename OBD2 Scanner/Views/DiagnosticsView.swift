@@ -13,6 +13,7 @@ struct DiagnosticsView: View {
     
     @State private var errorCodes: [DTC] = []
     @State private var isScanning: Bool = false
+    @State private var isScreenLoad: Bool = true
     
     private let dtcRepository: DTCRepository
     
@@ -24,13 +25,31 @@ struct DiagnosticsView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                if isScanning {
+                if isScreenLoad {
+                    VStack(spacing: 12) {
+                        Image(systemName: "engine.combustion")
+                            .font(.system(size: 50))
+                            .foregroundColor(.blue)
+                        Text("Scan diagnostic trouble codes from your vehicle's ECUs.")
+                            .font(.headline)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 8)
+                        Text("Connect to your bluetooth ELM327 device to begin scanning.")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 8)
+                    }
+                    .frame(maxHeight: .infinity)
+                } else if isScanning {
                     VStack(spacing: 16) {
                         ProgressView()
                             .scaleEffect(1.5)
                         Text("Scanning for diagnostic trouble codes...")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 8)
                     }
                     .frame(maxHeight: .infinity)
                 } else if errorCodes.isEmpty {
@@ -40,9 +59,13 @@ struct DiagnosticsView: View {
                             .foregroundColor(.blue)
                         Text("No diagnostic trouble codes found.")
                             .font(.headline)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 8)
                         Text("Vehicle system status is currently clear.")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 8)
                     }
                     .frame(maxHeight: .infinity)
                 } else {
@@ -70,6 +93,8 @@ struct DiagnosticsView: View {
                     }
                 }
                 
+                Spacer()
+                
                 Button(action: {
                     Task {
                         await runDiagnosticsScan()
@@ -84,13 +109,14 @@ struct DiagnosticsView: View {
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 8)
-                .disabled(isScanning)
+                .disabled(obdService.connection != .ready || isScanning)
             }
             .navigationTitle("Diagnostics")
         }
     }
     
     private func runDiagnosticsScan() async {
+        isScreenLoad = false
         isScanning = true
         errorCodes = []
         

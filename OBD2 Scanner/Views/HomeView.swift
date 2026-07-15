@@ -66,11 +66,15 @@ struct HomeView: View {
                         Image(systemName: "link")
                             .font(.system(size: 50))
                             .foregroundColor(.blue)
-                        Text("Connected to Bluetooth OBD-II Adapter!")
+                        Text("Scan real-time data from your vehicle's ECUs.")
                             .font(.headline)
-                        Text("Begin scanning when ready.")
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 8)
+                        Text("Connect to your bluetooth ELM327 device to begin scanning.")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 8)
                     }
                     .frame(maxHeight: .infinity)
                 }

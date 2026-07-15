@@ -37,12 +37,14 @@ final class BluetoothTransport:
     private var notifyCharacteristic: CBCharacteristic?
     
     private var connectContinuation: CheckedContinuation<Void, Error>?
-    private var connectTask: Task<Void, Error>?
     
     private var session: BluetoothSession?
     private let sessionLock = Mutex<Void>(())
     
     private(set) var state: ConnectionState = .idle
+    
+    private var peripherals: [CBPeripheral] = []
+    var onPeripheralsUpdated: (([CBPeripheral]) -> Void)?
     
     override init() {
         super.init()
@@ -70,39 +72,35 @@ final class BluetoothTransport:
         }
     }
     
-    func connect() async throws {
-        if let task = connectTask {
-            return try await task.value
-        }
-        
-        let task = Task<Void, Error> {
-            try await waitForBluetoothPower()
-            try await startScanAndConnect()
+    func startScan() async throws {
+        try await waitForBluetoothPower()
+        scanForPeripherals()
+    }
+    
+    func stopScan() {
+        centralManager.stopScan()
+        setState(.idle)
+    }
+    
+    func connect(_ peripheral: CBPeripheral) async throws {
+        let connectTask = Task {
+            try await connectToPeripheral(peripheral)
         }
         
         let timeout = Task {
-            try? await Task.sleep(nanoseconds: 60 * 1_000_000_000) // 60 seconds
+            try? await Task.sleep(for: .seconds(60))
             guard connectContinuation != nil else { return }
-            centralManager.stopScan()
-            if peripheral != nil {
-                centralManager.cancelPeripheralConnection(peripheral!)
-            }
-
+            centralManager.cancelPeripheralConnection(peripheral)
             finishConnect(.failure(BluetoothError.connectionTimeout))
-            task.cancel()
+            connectTask.cancel()
         }
-        
-        connectTask = task
         
         do {
-            try await task.value
+            try await connectTask.value
             timeout.cancel()
         } catch {
-            connectTask = nil
             throw error
         }
-        
-        connectTask = nil
     }
     
     func waitForBluetoothPower() async throws {
@@ -117,15 +115,38 @@ final class BluetoothTransport:
         }
     }
     
-    func startScanAndConnect() async throws {
+    func scanForPeripherals() {
+        print("Scanning for peripherals...")
+        
+        peripherals = []
+        DispatchQueue.main.async {
+            self.onPeripheralsUpdated?(self.peripherals)
+        }
+        
+        centralManager.scanForPeripherals(
+            withServices: nil,
+            options: nil
+        )
+        
+        setState(.scanning)
+    }
+    
+    func connectToPeripheral(_ peripheral: CBPeripheral) async throws {
+        print("Connecting to peripheral \(peripheral.name!).")
+        
         try await withCheckedThrowingContinuation { continuation in
             connectContinuation = continuation
-            centralManager.scanForPeripherals(
-                withServices: nil,
-                options: nil
-            )
-            
-            setState(.scanning)
+            self.peripheral = peripheral
+            peripheral.delegate = self
+            peripherals = []
+            DispatchQueue.main.async {
+                self.onPeripheralsUpdated?(self.peripherals)
+            }
+
+            centralManager.stopScan()
+            centralManager.connect(peripheral)
+
+            setState(.connecting)
         }
     }
     
@@ -135,19 +156,18 @@ final class BluetoothTransport:
         advertisementData: [String : Any],
         rssi RSSI: NSNumber
     ) {
-        guard peripheral.name == "VEEPEAK" else {
+        guard let name = peripheral.name else {
             return
         }
         
-        print("Connecting to \(peripheral.name!)")
-        
-        self.peripheral = peripheral
-        peripheral.delegate = self
-        
-        central.stopScan()
-        central.connect(peripheral)
-        
-        setState(.connecting)
+        if !peripherals.contains(where: { $0.identifier == peripheral.identifier }) {
+            print("Discovered peripheral \(name).")
+            peripherals.append(peripheral)
+            
+            DispatchQueue.main.async {
+                self.onPeripheralsUpdated?(self.peripherals)
+            }
+        }
     }
     
     func centralManager(

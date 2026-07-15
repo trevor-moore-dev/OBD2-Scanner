@@ -16,7 +16,7 @@ struct SplashScreenView: View {
             Color(.systemBackground)
                 .ignoresSafeArea()
             
-            VStack(spacing: 24) {
+            VStack(spacing: 8) {
                 Spacer()
                 
                 Image(systemName: "engine.combustion")
@@ -31,16 +31,16 @@ struct SplashScreenView: View {
                     Text("OBD-II Scanner")
                         .font(.system(size: 32, weight: .bold, design: .rounded))
                     
-                    Text("Searching for Bluetooth OBD-II Adapter...")
+                    Text("Bluetooth Vehicle Diagnostics")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
+                    
+                    ProgressView()
+                        .tint(.blue)
+                        .padding(.top, 16)
                 }
                 
                 Spacer()
-                
-                ProgressView()
-                    .tint(.blue)
-                    .padding(.bottom, 40)
             }
         }
         .onAppear {
