@@ -213,7 +213,7 @@ final class OBDService: ObservableObject {
                 throw OBDError.queryError("Failed to determine VIN.")
             }
             
-            let url = URL(string: "https://vpic.nhtsa.dot.gov/api//vehicles/DecodeVin/\(vin)?format=json")
+            let url = URL(string: "https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVin/\(vin)?format=json")
             let (data, response) = try await URLSession.shared.data(from: url!)
             guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
                 throw OBDError.networkError("NHTSA Server Error.")
