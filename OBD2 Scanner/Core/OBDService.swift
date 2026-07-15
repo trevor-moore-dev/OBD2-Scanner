@@ -246,7 +246,7 @@ final class OBDService: ObservableObject {
                         name: PID.vin.label,
                         value: vin,
                         formatValue: PID.vin.format,
-                        unit: PID.vin.unit
+                        unit: PID.vin.unit?.rawValue
                     )
                 ]
             }
@@ -264,7 +264,7 @@ final class OBDService: ObservableObject {
         let throttlePosition = await query(PID.throttlePosition, fallback: 0)
         let fuelPressure = await query(PID.fuelPressure, fallback: 0)
         let intakeManifoldPressure = await query(PID.intakeManifoldPressure, fallback: 0)
-        let intakeAirPressure = await query(PID.intakeAirPressure, fallback: 0)
+        let intakeAirTemperature = await query(PID.intakeAirTemperature, fallback: 0)
         
         return [
             Snapshot<Double>(
@@ -273,7 +273,7 @@ final class OBDService: ObservableObject {
                 name: PID.engineRpm.label,
                 value: rpm,
                 formatValue: PID.engineRpm.format,
-                unit: PID.engineRpm.unit
+                unit: PID.engineRpm.unit?.rawValue
             ),
             Snapshot<Double>(
                 id: PID.vehicleSpeed.command(),
@@ -281,7 +281,7 @@ final class OBDService: ObservableObject {
                 name: PID.vehicleSpeed.label,
                 value: speed,
                 formatValue: PID.vehicleSpeed.format,
-                unit: PID.vehicleSpeed.unit
+                unit: PID.vehicleSpeed.unit?.rawValue
             ),
             Snapshot<Double>(
                 id: PID.coolantTemperature.command(),
@@ -289,7 +289,7 @@ final class OBDService: ObservableObject {
                 name: PID.coolantTemperature.label,
                 value: coolantTemp,
                 formatValue: PID.coolantTemperature.format,
-                unit: PID.coolantTemperature.unit
+                unit: PID.coolantTemperature.unit?.rawValue
             ),
             Snapshot<Double>(
                 id: PID.throttlePosition.command(),
@@ -297,7 +297,7 @@ final class OBDService: ObservableObject {
                 name: PID.throttlePosition.label,
                 value: throttlePosition,
                 formatValue: PID.throttlePosition.format,
-                unit: PID.throttlePosition.unit
+                unit: PID.throttlePosition.unit?.rawValue
             ),
             Snapshot<Double>(
                 id: PID.fuelPressure.command(),
@@ -305,7 +305,7 @@ final class OBDService: ObservableObject {
                 name: PID.fuelPressure.label,
                 value: fuelPressure,
                 formatValue: PID.fuelPressure.format,
-                unit: PID.fuelPressure.unit
+                unit: PID.fuelPressure.unit?.rawValue
             ),
             Snapshot<Double>(
                 id: PID.intakeManifoldPressure.command(),
@@ -313,15 +313,15 @@ final class OBDService: ObservableObject {
                 name: PID.intakeManifoldPressure.label,
                 value: intakeManifoldPressure,
                 formatValue: PID.intakeManifoldPressure.format,
-                unit: PID.intakeManifoldPressure.unit
+                unit: PID.intakeManifoldPressure.unit?.rawValue
             ),
             Snapshot<Double>(
-                id: PID.intakeAirPressure.command(),
+                id: PID.intakeAirTemperature.command(),
                 title: nil,
-                name: PID.intakeAirPressure.label,
-                value: intakeAirPressure,
-                formatValue: PID.intakeAirPressure.format,
-                unit: PID.intakeAirPressure.unit
+                name: PID.intakeAirTemperature.label,
+                value: intakeAirTemperature,
+                formatValue: PID.intakeAirTemperature.format,
+                unit: PID.intakeAirTemperature.unit?.rawValue
             ),
         ]
     }

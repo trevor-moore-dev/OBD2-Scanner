@@ -7,8 +7,16 @@
 
 import Foundation
 
+enum Unit: String {
+    case mph = "MPH"
+    case fahrenheit = "°F"
+    case kpa = "kPa"
+    case percent = "%"
+}
+
 enum PIDError: Error {
-    case insufficientBytes(mode: UInt8, pid: UInt8?, expected: Int, actual: Int)
+    case insufficientFrames(expected: Int, actual: Int)
+    case insufficientBytes(expected: Int, actual: Int)
     case decodingError(String)
 }
 
@@ -16,10 +24,10 @@ struct OBDParameter<T> {
     let mode: UInt8
     let pid: UInt8?
     
-    let unit: String?
+    let unit: Unit?
     let label: String
     
-    let decode: ([UInt8]) throws -> T
+    let decode: ([[UInt8]]) throws -> T
     let format: (T) -> String
     
     func command() -> String {
@@ -32,180 +40,152 @@ struct OBDParameter<T> {
     }
 }
 
+extension OBDParameter where T == Double {
+    static let defaultFormatter: (Double) -> String = {
+        String(format: "%.2f", $0)
+    }
+}
+
+extension Array where Element == [UInt8] {
+    func require(_ count: Int) throws {
+        guard self.count >= count else {
+            throw PIDError.insufficientFrames(
+                expected: count,
+                actual: self.count
+            )
+        }
+    }
+}
+
+extension Array where Element == UInt8 {
+    func require(_ count: Int) throws {
+        guard self.count >= count else {
+            throw PIDError.insufficientBytes(
+                expected: count,
+                actual: self.count
+            )
+        }
+    }
+}
+
 enum PID {
     static let engineRpm = OBDParameter<Double>(
         mode: 0x01,
         pid: 0x0C,
         unit: nil,
         label: "RPM",
-        decode: { bytes in
-            guard bytes.count >= 2 else {
-                throw PIDError.insufficientBytes(
-                    mode: 0x01,
-                    pid: 0x0C,
-                    expected: 2,
-                    actual: bytes.count
-                )
-            }
+        decode: { frames in
+            try frames.require(1)
+            try frames[0].require(4)
             
-            let A = Int(bytes[0])
-            let B = Int(bytes[1])
+            let A = Int(frames[0][2])
+            let B = Int(frames[0][3])
             
             let value = (A << 8) | B
             
             return Double(value) / 4.0
         },
-        format: { value in
-            return String(format: "%.2f", value)
-        }
+        format: OBDParameter.defaultFormatter
     )
     
     static let vehicleSpeed = OBDParameter<Double>(
         mode: 0x01,
         pid: 0x0D,
-        unit: "MPH",
+        unit: Unit.mph,
         label: "Speed",
-        decode: { bytes in
-            guard !bytes.isEmpty else {
-                throw PIDError.insufficientBytes(
-                    mode: 0x01,
-                    pid: 0x0D,
-                    expected: 1,
-                    actual: bytes.count
-                )
-            }
+        decode: { frames in
+            try frames.require(1)
+            try frames[0].require(3)
             
-            let A = Double(bytes[0])
+            let A = Double(frames[0][2])
             
             return A * 0.621371
         },
-        format: { value in
-            return String(format: "%.2f", value)
-        }
+        format: OBDParameter.defaultFormatter
     )
     
     static let coolantTemperature = OBDParameter<Double>(
         mode: 0x01,
         pid: 0x05,
-        unit: "F",
+        unit: Unit.fahrenheit,
         label: "Coolant Temp",
-        decode: { bytes in
-            guard !bytes.isEmpty else {
-                throw PIDError.insufficientBytes(
-                    mode: 0x01,
-                    pid: 0x05,
-                    expected: 1,
-                    actual: bytes.count
-                )
-            }
+        decode: { frames in
+            try frames.require(1)
+            try frames[0].require(3)
             
-            let A = Double(bytes[0])
+            let A = Double(frames[0][2])
             let C = A - 40
             let F = (C * 1.8) + 32
             
             return F
         },
-        format: { value in
-            return String(format: "%.2f", value)
-        }
+        format: OBDParameter.defaultFormatter
     )
     
     static let throttlePosition = OBDParameter<Double>(
         mode: 0x01,
         pid: 0x11,
-        unit: "%",
+        unit: Unit.percent,
         label: "Throttle Position",
-        decode: { bytes in
-            guard !bytes.isEmpty else {
-                throw PIDError.insufficientBytes(
-                    mode: 0x01,
-                    pid: 0x11,
-                    expected: 1,
-                    actual: bytes.count
-                )
-            }
+        decode: { frames in
+            try frames.require(1)
+            try frames[0].require(3)
             
-            let A = Double(bytes[0])
+            let A = Double(frames[0][2])
             
             return (A * 100) / 255
         },
-        format: { value in
-            return String(format: "%.2f", value)
-        }
+        format: OBDParameter.defaultFormatter
     )
     
     static let fuelPressure = OBDParameter<Double>(
         mode: 0x01,
         pid: 0x0A,
-        unit: "kPa",
+        unit: Unit.kpa,
         label: "Fuel Pressure",
-        decode: { bytes in
-            guard !bytes.isEmpty else {
-                throw PIDError.insufficientBytes(
-                    mode: 0x01,
-                    pid: 0x0A,
-                    expected: 1,
-                    actual: bytes.count
-                )
-            }
+        decode: { frames in
+            try frames.require(1)
+            try frames[0].require(3)
             
-            let A = Double(bytes[0])
+            let A = Double(frames[0][2])
             
             return 3 * A
         },
-        format: { value in
-            return String(format: "%.2f", value)
-        }
+        format: OBDParameter.defaultFormatter
     )
     
     static let intakeManifoldPressure = OBDParameter<Double>(
         mode: 0x01,
         pid: 0x0B,
-        unit: "kPa",
+        unit: Unit.kpa,
         label: "Intake Manifold Pressure",
-        decode: { bytes in
-            guard !bytes.isEmpty else {
-                throw PIDError.insufficientBytes(
-                    mode: 0x01,
-                    pid: 0x0B,
-                    expected: 1,
-                    actual: bytes.count
-                )
-            }
+        decode: { frames in
+            try frames.require(1)
+            try frames[0].require(3)
             
-            let A = Double(bytes[0])
+            let A = Double(frames[0][2])
             
             return A
         },
-        format: { value in
-            return String(format: "%.2f", value)
-        }
+        format: OBDParameter.defaultFormatter
     )
     
-    static let intakeAirPressure = OBDParameter<Double>(
+    static let intakeAirTemperature = OBDParameter<Double>(
         mode: 0x01,
         pid: 0x0F,
-        unit: "F",
-        label: "Intake Air Pressure",
-        decode: { bytes in
-            guard !bytes.isEmpty else {
-                throw PIDError.insufficientBytes(
-                    mode: 0x01,
-                    pid: 0x0F,
-                    expected: 1,
-                    actual: bytes.count
-                )
-            }
+        unit: Unit.fahrenheit,
+        label: "Intake Air Temperature",
+        decode: { frames in
+            try frames.require(1)
+            try frames[0].require(3)
             
-            let A = Double(bytes[0])
+            let A = Double(frames[0][2])
             let C = A - 40
             let F = (C * 1.8) + 32
             
             return F
         },
-        format: { value in
-            return String(format: "%.2f", value)
-        }
+        format: OBDParameter.defaultFormatter
     )
     
     static let diagnosticTroubleCodes = OBDParameter<[String]>(
@@ -213,28 +193,22 @@ enum PID {
         pid: nil,
         unit: nil,
         label: "Diagnostic Trouble Codes",
-        decode: { bytes in
-            guard !bytes.isEmpty else {
-                throw PIDError.insufficientBytes(
-                    mode: 0x03,
-                    pid: nil,
-                    expected: 1,
-                    actual: bytes.count
-                )
-            }
+        decode: { frames in
+            try frames.require(1)
+            try frames[0].require(2)
             
             var codes: [String] = []
             
-            for i in stride(from: 0, to: bytes.count - 1, by: 2) {
-                let firstByte = bytes[i]
-                let secondByte = bytes[i + 1]
+            for i in stride(from: 1, to: frames[0].count - 1, by: 2) {
+                let firstByte = frames[0][i]
+                let secondByte = frames[0][i + 1]
                 
                 guard firstByte != 0x00 || secondByte != 0x00 else {
                     continue
                 }
                 
-                let firstDigit = Int(firstByte >> 4) // shift left 4 bits to keep the original left nibble
-                let secondDigit = Int(firstByte & 0x0F) // bitwise AND to keep the original right nibble
+                let firstDigit = Int(firstByte >> 4) // extract high nibble
+                let secondDigit = Int(firstByte & 0x0F) // extract low nibble
                 let prefix = DTCUtils.getPrefix(for: firstDigit)
                 let suffix = String(format: "%02X", secondByte)
                 
@@ -253,31 +227,46 @@ enum PID {
         pid: 0x02,
         unit: nil,
         label: "VIN",
-        decode: { bytes in
+        decode: { frames in
             
-            // 01 00 00 00 31
-            // 02 44 34 47 50
-            // 03 30 30 52 35
-            // 04 35 42 31 32
-            // 05 33 34 35 36
-            
-            guard bytes.count == 25 else {
-                throw PIDError.insufficientBytes(
-                    mode: 0x09,
-                    pid: 0x02,
-                    expected: 25,
-                    actual: bytes.count
-                )
-            }
+            // 49 02 01 35 54 44
+            // 4B 4B 33 44 43 36 46
+            // 53 35 34 35 33 31 33
+
+            // 49 02 01 00 00 00 31
+            // 49 02 02 44 34 47 50
+            // 49 02 03 30 30 52 35
+            // 49 02 04 35 42 31 32
+            // 49 02 05 33 34 35 36
             
             var asciiBytes: [UInt8] = []
             
-            for i in stride(from: 4, to: bytes.count, by: 1) {
-                guard i % 5 != 0 else {
-                    continue
+            for i in frames.indices {
+                // skip the header bytes
+                // multi-frame CAN VIN responses include a 1-based frame index
+                var start = 0
+                if
+                    frames[i].count >= 3 &&
+                    frames[i][0] == 0x49 &&
+                    frames[i][1] == 0x02 &&
+                    frames[i][2] == i + 1
+                {
+                    start = 3
                 }
                 
-                asciiBytes.append(bytes[i])
+                for j in start..<frames[i].count {
+                    asciiBytes.append(frames[i][j])
+                }
+            }
+            
+            // discard leading CAN padding bytes (00 00 00 ...), and keep the last 17 VIN chars
+            try asciiBytes.require(17)
+            if asciiBytes.count > 17 {
+                asciiBytes = Array(
+                    asciiBytes.dropFirst(
+                        asciiBytes.count - 17
+                    )
+                )
             }
             
             if let vin = String(bytes: asciiBytes, encoding: .ascii) {

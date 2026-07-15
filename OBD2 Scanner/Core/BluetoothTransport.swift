@@ -293,12 +293,7 @@ final class BluetoothTransport:
     
     func query<T>(_ parameter: OBDParameter<T>) async throws -> T {
         let bytes = try await sendRaw(parameter.command())
-        let parsed = try parseResponse(
-            bytes,
-            mode: parameter.mode,
-            pid: parameter.pid
-        )
-        
+        let parsed = try parseResponse(bytes)
         return try parameter.decode(parsed)
     }
     
@@ -346,16 +341,23 @@ final class BluetoothTransport:
         }
     }
     
-    private func parseResponse(_ bytes: [UInt8], mode: UInt8, pid: UInt8?) throws -> [UInt8] {
+    private func parseResponse(_ bytes: [UInt8]) throws -> [[UInt8]] {
         guard let string = String(bytes: bytes, encoding: .ascii) else {
             throw PIDError.decodingError("Invalid ASCII response.")
         }
         
         let lines = string.components(separatedBy: "\r")
-        var allBytes: [UInt8] = []
+        var frames: [[UInt8]] = []
         
-        for line in lines {
-            let cleanedLine = line
+        for i in lines.indices {
+            guard
+                (i < 1 || lines[i] != lines[i - 1]) &&
+                (i < 2 || lines[i] != lines[i - 2])
+            else {
+                continue
+            }
+            
+            let cleanedLine = lines[i]
                 .replacingOccurrences(of: "\n", with: "")
                 .replacingOccurrences(of: ">", with: "")
                 .replacingOccurrences(of: " ", with: "")
@@ -365,35 +367,23 @@ final class BluetoothTransport:
                 continue
             }
             
-            var lineBytes: [UInt8] = []
-            var byteIndex = 0
+            var frame: [UInt8] = []
             
-            for i in stride(from: 0, to: cleanedLine.count - 1, by: 2) {
-                let start = cleanedLine.index(cleanedLine.startIndex, offsetBy: i)
+            for j in stride(from: 0, to: cleanedLine.count - 1, by: 2) {
+                let start = cleanedLine.index(cleanedLine.startIndex, offsetBy: j)
                 let end = cleanedLine.index(start, offsetBy: 2)
                 
                 guard let byte = UInt8(cleanedLine[start..<end], radix: 16) else {
                     continue
                 }
                 
-                if byteIndex == 0 && byte == (mode | 0x40) {
-                    byteIndex += 1
-                    continue
-                }
-                
-                if byteIndex == 1, let pid, byte == pid {
-                    byteIndex += 1
-                    continue
-                }
-                
-                lineBytes.append(byte)
-                byteIndex += 1
+                frame.append(byte)
             }
             
-            allBytes.append(contentsOf: lineBytes)
+            frames.append(frame)
         }
 
-        return allBytes
+        return frames
     }
     
     private func setState(_ newState: ConnectionState) {
