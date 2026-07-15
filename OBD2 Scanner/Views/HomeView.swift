@@ -59,6 +59,8 @@ struct HomeView: View {
                         Text("Waiting for scan responses...")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 8)
                     }
                     .frame(maxHeight: .infinity)
                 } else {

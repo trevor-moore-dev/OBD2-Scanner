@@ -7,13 +7,21 @@
 
 import SwiftUI
 
+enum ViewState {
+    case screenLoad
+    case scanning
+    case clearing
+    case results
+}
+
+@MainActor
 struct DiagnosticsView: View {
     
     @ObservedObject private var obdService: OBDService
     
     @State private var errorCodes: [DTC] = []
-    @State private var isScanning: Bool = false
-    @State private var isScreenLoad: Bool = true
+    @State private var viewState: ViewState = .screenLoad
+    @State private var showAlert: Bool = false
     
     private let dtcRepository: DTCRepository
     
@@ -25,7 +33,8 @@ struct DiagnosticsView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                if isScreenLoad {
+                switch viewState {
+                case .screenLoad:
                     VStack(spacing: 12) {
                         Image(systemName: "engine.combustion")
                             .font(.system(size: 50))
@@ -41,99 +50,122 @@ struct DiagnosticsView: View {
                             .padding(.horizontal, 8)
                     }
                     .frame(maxHeight: .infinity)
-                } else if isScanning {
+                case .scanning, .clearing:
                     VStack(spacing: 16) {
                         ProgressView()
                             .scaleEffect(1.5)
-                        Text("Scanning for diagnostic trouble codes...")
+                        Text(viewState == .clearing ? "Clearing ECU Memory..." : "Scanning Systems...")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 8)
                     }
                     .frame(maxHeight: .infinity)
-                } else if errorCodes.isEmpty {
-                    VStack(spacing: 12) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: 50))
-                            .foregroundColor(.blue)
-                        Text("No diagnostic trouble codes found.")
-                            .font(.headline)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 8)
-                        Text("Vehicle system status is currently clear.")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 8)
-                    }
-                    .frame(maxHeight: .infinity)
-                } else {
-                    List(errorCodes, id: \.code) { dtc in
-                        VStack(alignment: .leading, spacing: 4) {
-                            HStack {
-                                Text(dtc.code)
-                                    .font(.system(.body, design: .monospaced))
-                                    .bold()
-                                    .foregroundColor(.red)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(Color.red.opacity(0.1))
-                                    .cornerRadius(4)
-                                
-                                Spacer()
-                            }
-                            
-                            Text(dtc.description)
-                                .font(.body)
-                                .foregroundColor(.primary)
-                                .padding(.top, 2)
+                case .results:
+                    if errorCodes.isEmpty {
+                        VStack(spacing: 12) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: 50))
+                                .foregroundColor(.blue)
+                            Text("No diagnostic trouble codes found.")
+                                .font(.headline)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 8)
+                            Text("Vehicle system status is currently clear.")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 8)
                         }
-                        .padding(.vertical, 4)
+                        .frame(maxHeight: .infinity)
+                    } else {
+                        List(errorCodes, id: \.code) { dtc in
+                            VStack(alignment: .leading, spacing: 4) {
+                                HStack {
+                                    Text(dtc.code)
+                                        .font(.system(.body, design: .monospaced))
+                                        .bold()
+                                        .foregroundColor(.red)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 4)
+                                        .background(Color.red.opacity(0.1))
+                                        .cornerRadius(4)
+                                    
+                                    Spacer()
+                                }
+                                
+                                Text(dtc.description)
+                                    .font(.body)
+                                    .foregroundColor(.primary)
+                                    .padding(.top, 2)
+                            }
+                            .padding(.vertical, 4)
+                        }
                     }
                 }
                 
                 Spacer()
                 
                 Button(action: {
-                    Task {
-                        await runDiagnosticsScan()
+                    if errorCodes.isEmpty {
+                        Task { await scanVehiclesForFaults() }
+                    } else {
+                        showAlert = true
                     }
                 }) {
-                    Text(isScanning ? "Scanning..." : "Scan")
+                    Text(errorCodes.isEmpty ? "Scan" : "Clear")
                         .padding(.vertical, 8)
                         .frame(maxWidth: .infinity)
-                        .background(isScanning ? Color.gray : Color.blue)
+                        .background(isBusy ? Color.gray : (errorCodes.isEmpty ? Color.blue : Color.red))
                         .foregroundColor(.white)
                         .cornerRadius(18)
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 8)
-                .disabled(obdService.connection != .ready || isScanning)
+                .disabled(obdService.connection != .ready || isBusy)
+                .alert("Clear Trouble Codes?", isPresented: $showAlert) {
+                    Button("Clear", role: .destructive) {
+                        Task { await clearVehicleFaults() }
+                    }
+                    Button("Cancel", role: .cancel) {}
+                } message: {
+                    Text("This clears emissions adaptations and turns off the Check Engine light. Stored fault codes will be wiped permanently.")
+                }
             }
             .navigationTitle("Diagnostics")
         }
     }
     
-    private func runDiagnosticsScan() async {
-        isScreenLoad = false
-        isScanning = true
-        errorCodes = []
-        
+    private var isBusy: Bool {
+        viewState == .scanning || viewState == .clearing
+    }
+    
+    private func scanVehiclesForFaults() async {
+        viewState = .scanning
+        self.errorCodes = await fetchVehicleFaults()
+        viewState = .results
+    }
+    
+    private func clearVehicleFaults() async {
+        viewState = .clearing
+        _ = await obdService.sendRaw("04")
+        try? await Task.sleep(for: .seconds(1.5))
+        self.errorCodes = await fetchVehicleFaults()
+        viewState = .results
+    }
+    
+    private func fetchVehicleFaults() async -> [DTC] {
         let codes = await obdService.query(
             PID.diagnosticTroubleCodes,
             fallback: []
         )
         
+        var tempCodes: [DTC] = []
         for code in codes {
-            errorCodes.append(
-                DTC(
-                    code: code,
-                    description: await dtcRepository.lookup(code)
-                )
-            )
+            let description = await dtcRepository.lookup(code)
+            tempCodes.append(DTC(code: code, description: description))
         }
         
-        isScanning = false
+        return tempCodes
     }
 }

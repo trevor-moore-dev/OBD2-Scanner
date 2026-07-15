@@ -34,10 +34,6 @@ struct SplashScreenView: View {
                     Text("Bluetooth Vehicle Diagnostics")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
-                    
-                    ProgressView()
-                        .tint(.blue)
-                        .padding(.top, 16)
                 }
                 
                 Spacer()

@@ -92,6 +92,7 @@ struct TerminalView: View {
         }
     }
     
+    @MainActor
     private func executeCommand() async {
         let trimmed = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else {
