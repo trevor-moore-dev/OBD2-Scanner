@@ -18,7 +18,7 @@ OBD2 Scanner iOS Application built in Swift. Can be used alongside any OBD2 Blue
 7. ~~Render vehicle information~~
 8. ~~Support standard PIDs~~
 9. ~~Clear DTCs~~
-10. Multi-line VIN parsing
+10. ~~Multi-line VIN parsing~~
 11. Multi-line PID requests
 
 ## Notes
