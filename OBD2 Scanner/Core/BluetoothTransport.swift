@@ -291,10 +291,10 @@ final class BluetoothTransport:
         }
     }
     
-    func query<T>(_ parameter: OBDParameter<T>) async throws -> T {
-        let bytes = try await sendRaw(parameter.command())
+    func query<T>(_ parameter: OBDParameter<T>) async throws -> Snapshot<T> {
+        let bytes = try await sendRaw(Mode.command(parameter.mode, parameter.pid))
         let parsed = try parseResponse(bytes)
-        return try parameter.decode(parsed)
+        return try await parameter.decode(parsed)
     }
     
     func sendRaw(_ command: String) async throws -> [UInt8] {
@@ -342,48 +342,61 @@ final class BluetoothTransport:
     }
     
     private func parseResponse(_ bytes: [UInt8]) throws -> [[UInt8]] {
-        guard let string = String(bytes: bytes, encoding: .ascii) else {
-            throw PIDError.decodingError("Invalid ASCII response.")
-        }
-        
-        let lines = string.components(separatedBy: "\r")
+        let lines = bytes.split { $0 == 0x0D || $0 == 0x0A } // split by carriage return or new line
         var frames: [[UInt8]] = []
         
         for i in lines.indices {
+            let line = lines[i]
             guard
-                (i < 1 || lines[i] != lines[i - 1]) &&
-                (i < 2 || lines[i] != lines[i - 2])
+                (i < 1 || line != lines[i - 1]) &&
+                (i < 2 || line != lines[i - 2])
             else {
                 continue
             }
             
-            let cleanedLine = lines[i]
-                .replacingOccurrences(of: "\n", with: "")
-                .replacingOccurrences(of: ">", with: "")
-                .replacingOccurrences(of: " ", with: "")
-                .trimmingCharacters(in: .whitespaces)
-            
-            guard !cleanedLine.isEmpty && cleanedLine.count % 2 == 0 else {
+            guard !line.isEmpty && line.count % 2 == 0 else {
                 continue
             }
             
             var frame: [UInt8] = []
+            var j = line.startIndex
             
-            for j in stride(from: 0, to: cleanedLine.count - 1, by: 2) {
-                let start = cleanedLine.index(cleanedLine.startIndex, offsetBy: j)
-                let end = cleanedLine.index(start, offsetBy: 2)
+            while j + 1 < line.endIndex {
+                let high = line[j]
+                let low = line[j + 1]
                 
-                guard let byte = UInt8(cleanedLine[start..<end], radix: 16) else {
+                guard
+                    let highNibble = hexValue(high),
+                    let lowNibble = hexValue(low)
+                else {
+                    j += 2
                     continue
                 }
                 
-                frame.append(byte)
+                frame.append((highNibble << 4) | lowNibble)
+                j += 2
             }
             
-            frames.append(frame)
+            if !frame.isEmpty {
+                frames.append(frame)
+            }
         }
 
         return frames
+    }
+    
+    private func hexValue(_ byte: UInt8) -> UInt8? {
+        // incoming byte is an ASCII code
+        switch byte {
+            case 48...57: // 0-9
+                return byte - 48
+            case 65...70: // A-F
+                return byte - 55
+            case 97...102: // a-f
+                return byte - 87
+            default:
+                return nil
+        }
     }
     
     private func setState(_ newState: ConnectionState) {

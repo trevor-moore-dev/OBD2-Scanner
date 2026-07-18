@@ -8,19 +8,6 @@ OBD2 Scanner iOS Application built in Swift. Can be used alongside any OBD2 Blue
 - [DTC Descriptions](https://gist.github.com/wzr1337/8af2731a5ffa98f9d506537279da7a0e)
 - [VIN Decoding](https://vpic.nhtsa.dot.gov/api//vehicles/DecodeVin/5Y2SL65876Z438228?format=json)
 
-## TODO
-1. ~~Bluetooth transport~~
-2. ~~Setup PID data stream~~
-3. ~~Terminal view~~
-4. ~~Persist DTC descriptions~~
-5. ~~Render DTCs~~
-6. ~~Unify response parsing~~
-7. ~~Render vehicle information~~
-8. ~~Support standard PIDs~~
-9. ~~Clear DTCs~~
-10. ~~Multi-line VIN parsing~~
-11. Multi-line PID requests
-
 ## Notes
 
 #### PID Prefixes

@@ -19,7 +19,6 @@ enum OBDConnection {
 
 enum OBDError: Error {
     case queryError(String)
-    case networkError(String)
 }
 
 @MainActor
@@ -122,9 +121,9 @@ final class OBDService: ObservableObject {
         isStreaming = false
     }
     
-    func query<T>(_ pid: OBDParameter<T>, fallback: T) async -> T {
+    func query<T>(_ pid: OBDParameter<T>) async throws -> Snapshot<T> {
         guard connection == .ready else {
-            return fallback
+            throw OBDError.queryError("Connection is \(connection)...")
         }
         
         do {
@@ -133,7 +132,7 @@ final class OBDService: ObservableObject {
             print(error)
         }
         
-        return fallback
+        throw OBDError.queryError("Failed to query \(Mode.command(pid.mode, pid.pid))")
     }
     
     func sendRaw(_ command: String) async -> String {
@@ -191,12 +190,6 @@ final class OBDService: ObservableObject {
                 while !Task.isCancelled {
                     let dynamicSnapshots = await self.dynamicSnapshots()
                     continuation.yield(staticSnapshots + dynamicSnapshots)
-                    
-                    do {
-                        try await Task.sleep(for: .milliseconds(1500))
-                    } catch {
-                        break
-                    }
                 }
             }
             
@@ -208,48 +201,7 @@ final class OBDService: ObservableObject {
     
     private func staticSnapshots() async -> [any AnySnapshot] {
         do {
-            let vin = await query(PID.vin, fallback: "")
-            guard vin.count == 17 else {
-                throw OBDError.queryError("Failed to determine VIN.")
-            }
-            
-            let url = URL(string: "https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVin/\(vin)?format=json")
-            let (data, response) = try await URLSession.shared.data(from: url!)
-            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-                throw OBDError.networkError("NHTSA Server Error.")
-            }
-            
-            let json = try JSONDecoder().decode(VIN.self, from: data)
-            
-            var vehicleTitle = "", year = "", make = "", model = ""
-            for result in json.Results {
-                if year != "" && make != "" && model != "" {
-                    vehicleTitle = "\(year) \(make) \(model)"
-                    break
-                }
-                
-                if let value = result.Value {
-                    switch result.Variable {
-                        case "Model Year": year = value
-                        case "Make": make = value
-                        case "Model": model = value
-                        default: break
-                    }
-                }
-            }
-            
-            if vehicleTitle != "" {
-                return [
-                    Snapshot<String>(
-                        id: PID.vin.command(),
-                        title: vehicleTitle,
-                        name: PID.vin.label,
-                        value: vin,
-                        formatValue: PID.vin.format,
-                        unit: PID.vin.unit?.rawValue
-                    )
-                ]
-            }
+            return [try await transport.query(PID.vin)]
         } catch {
             print(error)
         }
@@ -258,71 +210,27 @@ final class OBDService: ObservableObject {
     }
     
     private func dynamicSnapshots() async -> [any AnySnapshot] {
-        let rpm = await query(PID.engineRpm, fallback: 0)
-        let speed = await query(PID.vehicleSpeed, fallback: 0)
-        let coolantTemp = await query(PID.coolantTemperature, fallback: 0)
-        let throttlePosition = await query(PID.throttlePosition, fallback: 0)
-        let fuelPressure = await query(PID.fuelPressure, fallback: 0)
-        let intakeManifoldPressure = await query(PID.intakeManifoldPressure, fallback: 0)
-        let intakeAirTemperature = await query(PID.intakeAirTemperature, fallback: 0)
-        
-        return [
-            Snapshot<Double>(
-                id: PID.engineRpm.command(),
-                title: nil,
-                name: PID.engineRpm.label,
-                value: rpm,
-                formatValue: PID.engineRpm.format,
-                unit: PID.engineRpm.unit?.rawValue
-            ),
-            Snapshot<Double>(
-                id: PID.vehicleSpeed.command(),
-                title: nil,
-                name: PID.vehicleSpeed.label,
-                value: speed,
-                formatValue: PID.vehicleSpeed.format,
-                unit: PID.vehicleSpeed.unit?.rawValue
-            ),
-            Snapshot<Double>(
-                id: PID.coolantTemperature.command(),
-                title: nil,
-                name: PID.coolantTemperature.label,
-                value: coolantTemp,
-                formatValue: PID.coolantTemperature.format,
-                unit: PID.coolantTemperature.unit?.rawValue
-            ),
-            Snapshot<Double>(
-                id: PID.throttlePosition.command(),
-                title: nil,
-                name: PID.throttlePosition.label,
-                value: throttlePosition,
-                formatValue: PID.throttlePosition.format,
-                unit: PID.throttlePosition.unit?.rawValue
-            ),
-            Snapshot<Double>(
-                id: PID.fuelPressure.command(),
-                title: nil,
-                name: PID.fuelPressure.label,
-                value: fuelPressure,
-                formatValue: PID.fuelPressure.format,
-                unit: PID.fuelPressure.unit?.rawValue
-            ),
-            Snapshot<Double>(
-                id: PID.intakeManifoldPressure.command(),
-                title: nil,
-                name: PID.intakeManifoldPressure.label,
-                value: intakeManifoldPressure,
-                formatValue: PID.intakeManifoldPressure.format,
-                unit: PID.intakeManifoldPressure.unit?.rawValue
-            ),
-            Snapshot<Double>(
-                id: PID.intakeAirTemperature.command(),
-                title: nil,
-                name: PID.intakeAirTemperature.label,
-                value: intakeAirTemperature,
-                formatValue: PID.intakeAirTemperature.format,
-                unit: PID.intakeAirTemperature.unit?.rawValue
-            ),
+        var snapshots: [any AnySnapshot] = []
+        let parameters = [
+            PID.engineRpm,
+            PID.vehicleSpeed,
+            PID.coolantTemperature,
+            PID.throttlePosition,
+            PID.engineLoad,
+            PID.mafAirFlowRate,
+            PID.intakeAirTemperature,
         ]
+        
+        for parameter in parameters {
+            do {
+                snapshots.append(
+                    try await transport.query(parameter)
+                )
+            } catch {
+                print(error)
+            }
+        }
+        
+        return snapshots
     }
 }

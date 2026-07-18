@@ -155,17 +155,23 @@ struct DiagnosticsView: View {
     }
     
     private func fetchVehicleFaults() async -> [DTC] {
-        let codes = await obdService.query(
-            PID.diagnosticTroubleCodes,
-            fallback: []
-        )
-        
-        var tempCodes: [DTC] = []
-        for code in codes {
-            let description = await dtcRepository.lookup(code)
-            tempCodes.append(DTC(code: code, description: description))
+        do {
+            let snapshot = try await obdService.query(
+                PID.diagnosticTroubleCodes
+            )
+            
+            var tempCodes: [DTC] = []
+            for code in snapshot.value {
+                let description = await dtcRepository.lookup(code)
+                tempCodes.append(DTC(code: code, description: description))
+            }
+            
+            return tempCodes
+        } catch {
+            print(error)
         }
         
-        return tempCodes
+        return []
+        
     }
 }

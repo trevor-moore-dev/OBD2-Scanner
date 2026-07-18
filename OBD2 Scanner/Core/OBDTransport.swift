@@ -14,6 +14,6 @@ protocol OBDTransport {
     func stopScan()
     func connect(_ peripheral: CBPeripheral) async throws
     func disconnect()
-    func query<T>(_ parameter: OBDParameter<T>) async throws -> T
+    func query<T>(_ parameter: OBDParameter<T>) async throws -> Snapshot<T>
     func sendRaw(_ command: String) async throws -> [UInt8]
 }
